@@ -1,0 +1,73 @@
+---
+title: Messages (format Anthropic)
+description: Memakai SDK Anthropic dengan JavaRouters.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+```http
+POST https://javarouters.talentadigitalkudus.id/v1/messages
+```
+
+Endpoint ini mengikuti format [Messages API Anthropic](https://docs.anthropic.com/en/api/messages), sehingga SDK Anthropic dan alat seperti Claude Code bisa dipakai langsung. Cek dulu di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) bahwa model yang dipilih mendukung format Anthropic.
+
+<Tabs>
+<TabItem label="curl">
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/messages \
+  -H "x-api-key: $JAVAROUTERS_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4.6",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Halo"}]
+  }'
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import os
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="https://javarouters.talentadigitalkudus.id",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+message = client.messages.create(
+    model="claude-sonnet-4.6",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Halo"}],
+)
+print(message.content[0].text)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  baseURL: "https://javarouters.talentadigitalkudus.id",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const message = await client.messages.create({
+  model: "claude-sonnet-4.6",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "Halo" }],
+});
+console.log(message.content[0].text);
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+Base URL untuk SDK Anthropic **tidak** diakhiri `/v1`. SDK menambahkan `/v1/messages` sendiri.
+:::

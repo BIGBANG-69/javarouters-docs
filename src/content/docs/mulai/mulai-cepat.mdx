@@ -1,0 +1,92 @@
+---
+title: Mulai cepat
+description: Dari daftar akun sampai request pertama dalam beberapa menit.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. **Daftar akun**
+
+   Buka [javarouters.talentadigitalkudus.id](https://javarouters.talentadigitalkudus.id), lalu daftar dan masuk.
+
+2. **Isi saldo**
+
+   Buka menu **Dompet** di konsol (`/wallet`). Metode pengisian yang tersedia ditampilkan di halaman itu.
+
+3. **Buat API key**
+
+   Buka menu **API Keys** (`/keys`), buat key baru, lalu salin. Simpan key di tempat aman dan jangan ditaruh di kode yang dibagikan.
+
+4. **Pilih model**
+
+   Lihat nama model di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). Pakai nama persis seperti yang tertulis di sana, misalnya `claude-sonnet-4.6`.
+
+5. **Kirim request pertama**
+
+   Simpan key di environment variable, lalu jalankan salah satu contoh di bawah.
+
+   ```bash
+   export JAVAROUTERS_API_KEY="sk-..."
+   ```
+
+</Steps>
+
+<Tabs>
+<TabItem label="curl">
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/chat/completions \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "claude-sonnet-4.6", "messages": [{"role": "user", "content": "Halo"}]}'
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+response = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    messages=[{"role": "user", "content": "Halo"}],
+)
+print(response.choices[0].message.content)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const response = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  messages: [{ role: "user", content: "Halo" }],
+});
+console.log(response.choices[0].message.content);
+```
+
+</TabItem>
+</Tabs>
+
+Kalau mendapat error, lihat [Kode error](/docs/bantuan/kode-error/).
+
+## Langkah berikutnya
+
+- [Base URL dan autentikasi](/docs/api/base-url-autentikasi/)
+- [Memakai Claude Code](/docs/integrasi/claude-code/)
+- [Cek pemakaian dan saldo](/docs/akun/saldo-dan-harga/)

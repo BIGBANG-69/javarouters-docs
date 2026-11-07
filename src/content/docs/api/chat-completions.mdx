@@ -1,0 +1,99 @@
+---
+title: Chat Completions (format OpenAI)
+description: Mengirim percakapan ke model apa pun lewat endpoint yang kompatibel dengan OpenAI.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+```http
+POST https://javarouters.talentadigitalkudus.id/v1/chat/completions
+```
+
+Endpoint ini mengikuti format [Chat Completions OpenAI](https://platform.openai.com/docs/api-reference/chat). Endpoint ini bisa dipakai untuk semua model yang dijual, termasuk Claude, Gemini dan DeepSeek, bukan hanya GPT.
+
+## Parameter utama
+
+| Parameter | Wajib | Keterangan |
+|---|---|---|
+| `model` | Ya | Nama model persis seperti di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| `messages` | Ya | Daftar pesan `{ "role": "system" \| "user" \| "assistant", "content": "..." }`. |
+| `stream` | Tidak | `true` untuk menerima jawaban bertahap (Server-Sent Events). |
+| `max_tokens` | Tidak | Batas jumlah token jawaban. |
+| `temperature` | Tidak | Tingkat variasi jawaban. |
+
+Parameter lain dari format OpenAI diteruskan ke model. Dukungannya tergantung model yang dipilih.
+
+## Contoh dengan streaming
+
+<Tabs>
+<TabItem label="curl">
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/chat/completions \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4.6",
+    "stream": true,
+    "messages": [
+      {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+      {"role": "user", "content": "Jelaskan apa itu API gateway."}
+    ]
+  }'
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+stream = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    stream=True,
+    messages=[
+        {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+        {"role": "user", "content": "Jelaskan apa itu API gateway."},
+    ],
+)
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const stream = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  stream: true,
+  messages: [
+    { role: "system", content: "Jawab dalam bahasa Indonesia." },
+    { role: "user", content: "Jelaskan apa itu API gateway." },
+  ],
+});
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Respons
+
+Respons mengikuti format OpenAI. Jumlah token yang dipakai ada di field `usage` (`prompt_tokens`, `completion_tokens`), dan biaya request dihitung dari angka tersebut.

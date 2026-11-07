@@ -1,0 +1,43 @@
+name: Build and publish docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Third-party actions are pinned to commit SHAs because this job can write to the repo.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # Starlight's "last updated" date reads git history
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.4
+
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+      # The VPS pulls this branch (see deploy/server/docs-sync.sh). The site goes in site/
+      # so the clone's .git directory is never inside the folder Caddy serves.
+      - name: Publish to the deploy branch
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: deploy
+          publish_dir: ./dist
+          destination_dir: site
+          force_orphan: true
+          enable_jekyll: true # do not add a .nojekyll file; this branch is not GitHub Pages
+          commit_message: 'deploy: ${{ github.sha }}'

@@ -1,0 +1,34 @@
+---
+title: Dokumentasi JavaRouters
+description: Satu API key untuk banyak model AI, lewat endpoint yang kompatibel dengan OpenAI dan Anthropic.
+template: splash
+hero:
+  tagline: Satu akun dan satu API key untuk Claude, GPT, Gemini, DeepSeek dan model AI lain. SDK dan alat yang sudah kamu pakai cukup diganti base URL-nya.
+  actions:
+    - text: Mulai cepat
+      link: /docs/mulai/mulai-cepat/
+      icon: right-arrow
+    - text: Lihat model dan harga
+      link: https://javarouters.talentadigitalkudus.id/pricing
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+	<Card title="Kompatibel OpenAI" icon="seti:json">
+		Pakai SDK `openai` (Python, Node.js) atau `curl` dengan base URL
+		`https://javarouters.talentadigitalkudus.id/v1`.
+	</Card>
+	<Card title="Kompatibel Anthropic" icon="puzzle">
+		Endpoint `/v1/messages` untuk SDK Anthropic dan Claude Code.
+	</Card>
+	<Card title="Bayar sesuai pemakaian" icon="document">
+		Isi saldo, buat API key, lalu saldo terpotong per request.
+	</Card>
+	<Card title="Harga dan model live" icon="list-format">
+		Daftar model dan harga selalu mengikuti halaman
+		[Model dan harga](https://javarouters.talentadigitalkudus.id/pricing).
+	</Card>
+</CardGrid>

@@ -1,0 +1,20 @@
+# Site block used in /opt/javarouters/Caddyfile on the VPS (global options block omitted).
+# The docs container mount: /opt/javarouters/docs-site/site -> /srv/docs (read-only).
+{$DOMAIN} {
+	redir /docs /docs/ 308
+
+	handle_path /docs/* {
+		root * /srv/docs
+		header /_astro/* Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle {
+		reverse_proxy new-api:3000 {
+			# Stream SSE chunks immediately; never buffer model output.
+			flush_interval -1
+			header_up X-Forwarded-For {client_ip}
+			header_up X-Real-IP {client_ip}
+		}
+	}
+}
