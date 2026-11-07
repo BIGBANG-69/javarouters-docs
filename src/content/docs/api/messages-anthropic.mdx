@@ -1,6 +1,6 @@
 ---
 title: Messages (format Anthropic)
-description: Memakai SDK Anthropic dengan JavaRouters.
+description: POST /v1/messages — memakai SDK Anthropic dan Claude Code dengan JavaRouters.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -9,9 +9,38 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 POST https://javarouters.talentadigitalkudus.id/v1/messages
 ```
 
-Endpoint ini mengikuti format [Messages API Anthropic](https://docs.anthropic.com/en/api/messages), sehingga SDK Anthropic dan alat seperti Claude Code bisa dipakai langsung. Cek dulu di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) bahwa model yang dipilih mendukung format Anthropic.
+Endpoint ini mengikuti format [Messages API Anthropic](https://docs.anthropic.com/en/api/messages), sehingga SDK Anthropic dan alat seperti Claude Code bisa dipakai langsung. Pastikan model yang dipilih mendukung format Anthropic; ini ditandai di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing).
 
-<Tabs>
+:::note
+Base URL untuk SDK Anthropic adalah `https://javarouters.talentadigitalkudus.id`, **tanpa** `/v1`.
+:::
+
+## Header
+
+| Header | Nilai |
+|---|---|
+| `x-api-key` | `sk-...` (atau `Authorization: Bearer sk-...`) |
+| `anthropic-version` | `2023-06-01` |
+| `Content-Type` | `application/json` |
+
+## Body request
+
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `model` | string | Ya | Nama model dari [daftar model](/docs/api/daftar-model/). |
+| `max_tokens` | integer | Ya | Batas jumlah token jawaban. |
+| `messages` | array | Ya | Percakapan bergantian `user` dan `assistant`. |
+| `system` | string / array | Tidak | Instruksi umum. Berbeda dari format OpenAI, ini bukan bagian dari `messages`. |
+| `stream` | boolean | Tidak | `true` untuk menerima jawaban bertahap. |
+| `temperature` | number | Tidak | Variasi jawaban. |
+| `top_p`, `top_k` | number | Tidak | Pengaturan sampling. |
+| `stop_sequences` | array | Tidak | Teks yang menghentikan jawaban. |
+| `tools` | array | Tidak | Fungsi yang boleh dipanggil model (format Anthropic). |
+| `tool_choice` | object | Tidak | Mengatur pemakaian tools. |
+
+## Contoh request
+
+<Tabs syncKey="lang">
 <TabItem label="curl">
 
 ```bash
@@ -22,7 +51,8 @@ curl https://javarouters.talentadigitalkudus.id/v1/messages \
   -d '{
     "model": "claude-sonnet-4.6",
     "max_tokens": 1024,
-    "messages": [{"role": "user", "content": "Halo"}]
+    "system": "Jawab dalam bahasa Indonesia.",
+    "messages": [{"role": "user", "content": "Apa itu API gateway?"}]
   }'
 ```
 
@@ -41,13 +71,14 @@ client = anthropic.Anthropic(
 message = client.messages.create(
     model="claude-sonnet-4.6",
     max_tokens=1024,
-    messages=[{"role": "user", "content": "Halo"}],
+    system="Jawab dalam bahasa Indonesia.",
+    messages=[{"role": "user", "content": "Apa itu API gateway?"}],
 )
 print(message.content[0].text)
 ```
 
 </TabItem>
-<TabItem label="Node.js">
+<TabItem label="JavaScript">
 
 ```js
 import Anthropic from "@anthropic-ai/sdk";
@@ -60,7 +91,8 @@ const client = new Anthropic({
 const message = await client.messages.create({
   model: "claude-sonnet-4.6",
   max_tokens: 1024,
-  messages: [{ role: "user", content: "Halo" }],
+  system: "Jawab dalam bahasa Indonesia.",
+  messages: [{ role: "user", content: "Apa itu API gateway?" }],
 });
 console.log(message.content[0].text);
 ```
@@ -68,6 +100,36 @@ console.log(message.content[0].text);
 </TabItem>
 </Tabs>
 
-:::note
-Base URL untuk SDK Anthropic **tidak** diakhiri `/v1`. SDK menambahkan `/v1/messages` sendiri.
-:::
+## Respons
+
+```json
+{
+  "id": "msg_...",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-4.6",
+  "content": [{ "type": "text", "text": "API gateway adalah ..." }],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 24, "output_tokens": 180 }
+}
+```
+
+| Field | Keterangan |
+|---|---|
+| `content` | Daftar blok jawaban. Teks ada di blok bertipe `text`; pemanggilan fungsi di blok `tool_use`. |
+| `stop_reason` | `end_turn` (selesai), `max_tokens` (terpotong), `stop_sequence`, atau `tool_use`. |
+| `usage` | Jumlah token input dan output. |
+
+## Streaming
+
+Dengan `"stream": true`, server mengirim event berurutan: `message_start`, `content_block_start`, beberapa `content_block_delta` (teks ada di `delta.text`), `content_block_stop`, `message_delta`, lalu `message_stop`. SDK Anthropic sudah menangani urutan ini:
+
+```python
+with client.messages.stream(
+    model="claude-sonnet-4.6",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Ceritakan sejarah Kudus singkat."}],
+) as stream:
+    for text in stream.text_stream:
+        print(text, end="", flush=True)
+```

@@ -1,0 +1,92 @@
+---
+title: PHP
+description: Memakai JavaRouters dari PHP dan Laravel.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+<TabItem label="openai-php/client">
+
+```bash
+composer require openai-php/client guzzlehttp/guzzle
+```
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+$client = OpenAI::factory()
+    ->withApiKey(getenv('JAVAROUTERS_API_KEY'))
+    ->withBaseUri('https://javarouters.talentadigitalkudus.id/v1')
+    ->make();
+
+$result = $client->chat()->create([
+    'model' => 'claude-sonnet-4.6',
+    'messages' => [
+        ['role' => 'system', 'content' => 'Jawab dalam bahasa Indonesia.'],
+        ['role' => 'user', 'content' => 'Buat 3 ide nama warung kopi.'],
+    ],
+]);
+
+echo $result->choices[0]->message->content;
+```
+
+</TabItem>
+<TabItem label="cURL bawaan PHP">
+
+```php
+<?php
+$ch = curl_init('https://javarouters.talentadigitalkudus.id/v1/chat/completions');
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 120,
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . getenv('JAVAROUTERS_API_KEY'),
+        'Content-Type: application/json',
+    ],
+    CURLOPT_POSTFIELDS => json_encode([
+        'model' => 'claude-sonnet-4.6',
+        'messages' => [['role' => 'user', 'content' => 'Buat 3 ide nama warung kopi.']],
+    ]),
+]);
+
+$body = curl_exec($ch);
+$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($status !== 200) {
+    throw new RuntimeException("Error $status: $body");
+}
+echo json_decode($body, true)['choices'][0]['message']['content'];
+```
+
+</TabItem>
+</Tabs>
+
+## Laravel
+
+Simpan key di `.env`:
+
+```dotenv
+JAVAROUTERS_API_KEY=sk-...
+```
+
+Lalu panggil dengan HTTP client bawaan Laravel:
+
+```php
+use Illuminate\Support\Facades\Http;
+
+$response = Http::withToken(env('JAVAROUTERS_API_KEY'))
+    ->timeout(120)
+    ->post('https://javarouters.talentadigitalkudus.id/v1/chat/completions', [
+        'model' => 'claude-sonnet-4.6',
+        'messages' => [['role' => 'user', 'content' => 'Halo']],
+    ])
+    ->throw();
+
+$text = $response->json('choices.0.message.content');
+```
+
+Sebaiknya baca key lewat `config()` (misalnya `config('services.javarouters.key')`) supaya tetap bekerja setelah `php artisan config:cache`.

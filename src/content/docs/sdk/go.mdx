@@ -1,0 +1,108 @@
+---
+title: Go
+description: Memakai JavaRouters dari Go dengan library standar net/http.
+---
+
+Contoh di bawah hanya memakai library standar Go, tanpa dependensi tambahan. Kalau kamu sudah memakai SDK OpenAI untuk Go, cukup set base URL ke `https://javarouters.talentadigitalkudus.id/v1` dan API key JavaRouters.
+
+## Request biasa
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"time"
+)
+
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type ChatRequest struct {
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+	Stream   bool      `json:"stream,omitempty"`
+}
+
+type ChatResponse struct {
+	Choices []struct {
+		Message Message `json:"message"`
+	} `json:"choices"`
+	Usage struct {
+		PromptTokens     int `json:"prompt_tokens"`
+		CompletionTokens int `json:"completion_tokens"`
+	} `json:"usage"`
+}
+
+func main() {
+	body, _ := json.Marshal(ChatRequest{
+		Model:    "claude-sonnet-4.6",
+		Messages: []Message{{Role: "user", Content: "Buat 3 ide nama warung kopi."}},
+	})
+
+	req, _ := http.NewRequest(http.MethodPost,
+		"https://javarouters.talentadigitalkudus.id/v1/chat/completions", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("JAVAROUTERS_API_KEY"))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		msg, _ := io.ReadAll(resp.Body)
+		panic(fmt.Sprintf("error %d: %s", resp.StatusCode, msg))
+	}
+
+	var out ChatResponse
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		panic(err)
+	}
+	fmt.Println(out.Choices[0].Message.Content)
+}
+```
+
+## Streaming
+
+Set `Stream: true`, lalu baca baris `data:` satu per satu:
+
+```go
+// Tambahkan import "bufio" dan "strings".
+reader := bufio.NewReader(resp.Body)
+for {
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		break // io.EOF berarti stream selesai
+	}
+	line = strings.TrimSpace(line)
+	if !strings.HasPrefix(line, "data: ") {
+		continue
+	}
+	data := strings.TrimPrefix(line, "data: ")
+	if data == "[DONE]" {
+		break
+	}
+	var chunk struct {
+		Choices []struct {
+			Delta struct {
+				Content string `json:"content"`
+			} `json:"delta"`
+		} `json:"choices"`
+	}
+	if json.Unmarshal([]byte(data), &chunk) == nil && len(chunk.Choices) > 0 {
+		fmt.Print(chunk.Choices[0].Delta.Content)
+	}
+}
+```
+
+Format chunk lengkapnya ada di [Streaming](/docs/panduan/streaming/).

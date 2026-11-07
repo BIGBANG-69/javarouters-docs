@@ -1,0 +1,111 @@
+---
+title: JavaScript / TypeScript
+description: Memakai JavaRouters dari Node.js, Bun, Deno, atau backend Next.js.
+---
+
+:::caution
+Panggil JavaRouters dari **server** (Node.js, Bun, Deno, API route Next.js), bukan dari kode browser. API key yang dikirim ke browser bisa dibaca siapa saja.
+:::
+
+## SDK OpenAI (disarankan)
+
+```bash
+npm install openai
+```
+
+```ts
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const response = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  messages: [
+    { role: "system", content: "Jawab dalam bahasa Indonesia." },
+    { role: "user", content: "Buat 3 ide nama warung kopi." },
+  ],
+});
+console.log(response.choices[0].message.content);
+```
+
+### Streaming
+
+```ts
+const stream = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  stream: true,
+  messages: [{ role: "user", content: "Jelaskan REST API singkat." }],
+});
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+}
+```
+
+## SDK Anthropic
+
+```bash
+npm install @anthropic-ai/sdk
+```
+
+```ts
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  baseURL: "https://javarouters.talentadigitalkudus.id", // tanpa /v1
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const message = await client.messages.create({
+  model: "claude-sonnet-4.6",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "Buat 3 ide nama warung kopi." }],
+});
+console.log(message.content[0].type === "text" ? message.content[0].text : message.content);
+```
+
+## Vercel AI SDK
+
+```bash
+npm install ai @ai-sdk/openai-compatible
+```
+
+```ts
+import { generateText } from "ai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+
+const javarouters = createOpenAICompatible({
+  name: "javarouters",
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const { text } = await generateText({
+  model: javarouters("claude-sonnet-4.6"),
+  prompt: "Buat 3 ide nama warung kopi.",
+});
+console.log(text);
+```
+
+## Tanpa SDK (fetch)
+
+```ts
+const res = await fetch("https://javarouters.talentadigitalkudus.id/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.JAVAROUTERS_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "claude-sonnet-4.6",
+    messages: [{ role: "user", content: "Halo" }],
+  }),
+});
+if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+const data = await res.json();
+console.log(data.choices[0].message.content);
+```
+
+Lihat juga: [Streaming tanpa SDK](/docs/panduan/streaming/), [Retry dan penanganan error](/docs/panduan/retry/).

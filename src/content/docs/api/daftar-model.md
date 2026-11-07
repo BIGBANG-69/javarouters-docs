@@ -1,23 +1,45 @@
 ---
 title: Daftar model
-description: Cara mengetahui model yang tersedia untuk API key kamu.
+description: GET /v1/models — model yang bisa dipakai API key kamu.
 ---
 
-Daftar model berubah mengikuti ketersediaan dari penyedia, jadi dokumentasi ini sengaja **tidak** mencantumkan daftar tetap. Ada dua cara melihat daftar terbaru.
+```http
+GET https://javarouters.talentadigitalkudus.id/v1/models
+```
 
-## Halaman Model dan harga
+Daftar model berubah mengikuti ketersediaan dari penyedia dan diperbarui otomatis, jadi dokumentasi ini sengaja **tidak** mencantumkan daftar tetap. Ambil daftarnya dari endpoint ini, atau lihat halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) yang juga menampilkan harga dan format endpoint yang didukung tiap model.
 
-Buka [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). Halaman itu menampilkan setiap model beserta harga dan format endpoint yang didukung (OpenAI, Anthropic, atau keduanya).
-
-## Lewat API
+## Request
 
 ```bash
 curl https://javarouters.talentadigitalkudus.id/v1/models \
   -H "Authorization: Bearer $JAVAROUTERS_API_KEY"
 ```
 
-Respons mengikuti format OpenAI, dan field `data[].id` berisi nama model yang bisa dipakai di parameter `model`.
+Dengan SDK OpenAI:
+
+```python
+for model in client.models.list():
+    print(model.id)
+```
+
+## Respons
+
+Format OpenAI. Field `data[].id` berisi nama yang dipakai di parameter `model`.
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "id": "claude-sonnet-4.6", "object": "model", "owned_by": "..." },
+    { "id": "deepseek-v4-pro", "object": "model", "owned_by": "..." }
+  ]
+}
+```
+
+Isi contoh di atas hanya ilustrasi. Jika key kamu dibatasi ke model tertentu, daftar yang muncul menyesuaikan.
 
 ## Penamaan model
 
-Pakai nama **persis** seperti yang tertulis di daftar, misalnya `claude-sonnet-4.6` atau `deepseek-v4-pro`. Nama bisa berbeda dari ID resmi penyedia, jadi jangan mengandalkan nama default dari SDK atau alat yang kamu pakai.
+- Pakai nama **persis** seperti di daftar, misalnya `claude-sonnet-4.6`. Nama bisa berbeda dari ID resmi penyedia, jadi jangan mengandalkan nama default dari SDK atau alat yang kamu pakai.
+- Model bisa hilang sementara dari daftar ketika penyedianya tidak tersedia. Simpan nama model di konfigurasi aplikasi (bukan ditulis mati di kode) supaya mudah diganti.

@@ -5,7 +5,7 @@ description: Pertanyaan yang sering diajukan.
 
 ## Apakah kode saya perlu diubah banyak?
 
-Tidak. Kalau kamu sudah memakai SDK OpenAI atau Anthropic, cukup ganti base URL dan API key. Lihat [Base URL dan autentikasi](/docs/api/base-url-autentikasi/).
+Tidak. Kalau kamu sudah memakai SDK OpenAI atau Anthropic, cukup ganti base URL dan API key. Lihat [Ringkasan API](/docs/api/ringkasan/).
 
 ## Bisakah memakai model Claude lewat format OpenAI?
 

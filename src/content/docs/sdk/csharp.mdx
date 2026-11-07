@@ -1,0 +1,62 @@
+---
+title: C# / .NET
+description: Memakai JavaRouters dari .NET dengan SDK OpenAI resmi atau HttpClient.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+<TabItem label="SDK OpenAI (.NET)">
+
+```bash
+dotnet add package OpenAI
+```
+
+```csharp
+using System.ClientModel;
+using OpenAI;
+using OpenAI.Chat;
+
+var client = new ChatClient(
+    model: "claude-sonnet-4.6",
+    credential: new ApiKeyCredential(Environment.GetEnvironmentVariable("JAVAROUTERS_API_KEY")!),
+    options: new OpenAIClientOptions
+    {
+        Endpoint = new Uri("https://javarouters.talentadigitalkudus.id/v1"),
+    });
+
+ChatCompletion completion = client.CompleteChat(
+    new SystemChatMessage("Jawab dalam bahasa Indonesia."),
+    new UserChatMessage("Buat 3 ide nama warung kopi."));
+
+Console.WriteLine(completion.Content[0].Text);
+```
+
+</TabItem>
+<TabItem label="HttpClient">
+
+```csharp
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
+http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+    "Bearer", Environment.GetEnvironmentVariable("JAVAROUTERS_API_KEY"));
+
+var response = await http.PostAsJsonAsync(
+    "https://javarouters.talentadigitalkudus.id/v1/chat/completions",
+    new
+    {
+        model = "claude-sonnet-4.6",
+        messages = new[] { new { role = "user", content = "Buat 3 ide nama warung kopi." } },
+    });
+response.EnsureSuccessStatusCode();
+
+using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+Console.WriteLine(json.RootElement
+    .GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString());
+```
+
+</TabItem>
+</Tabs>

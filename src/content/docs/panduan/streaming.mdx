@@ -1,0 +1,131 @@
+---
+title: Streaming
+description: Menerima jawaban model secara bertahap dengan Server-Sent Events.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Dengan streaming, jawaban muncul sedikit demi sedikit seperti mengetik, tanpa menunggu jawaban selesai. Ini penting untuk chatbot dan jawaban panjang.
+
+Aktifkan dengan `"stream": true` di [Chat Completions](/docs/api/chat-completions/) atau [Messages](/docs/api/messages-anthropic/).
+
+## Format chunk (format OpenAI)
+
+Server mengirim baris `data:` berisi JSON, dipisah satu baris kosong, dan diakhiri `data: [DONE]`:
+
+```text
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}
+
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"API "}}]}
+
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"gateway"}}]}
+
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: [DONE]
+```
+
+Teks ada di `choices[0].delta.content`. Gabungkan semua potongan untuk mendapatkan jawaban lengkap. Kirim `"stream_options": {"include_usage": true}` untuk meminta jumlah token di chunk terakhir.
+
+## Contoh
+
+<Tabs syncKey="lang">
+<TabItem label="curl">
+
+```bash
+curl -N https://javarouters.talentadigitalkudus.id/v1/chat/completions \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "claude-sonnet-4.6", "stream": true,
+       "messages": [{"role": "user", "content": "Ceritakan sejarah Kudus singkat."}]}'
+```
+
+`-N` mematikan buffering curl supaya potongan langsung tampil.
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+stream = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    stream=True,
+    messages=[{"role": "user", "content": "Ceritakan sejarah Kudus singkat."}],
+)
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const stream = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  stream: true,
+  messages: [{ role: "user", content: "Ceritakan sejarah Kudus singkat." }],
+});
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+}
+```
+
+</TabItem>
+<TabItem label="Tanpa SDK (fetch)">
+
+```js
+const res = await fetch("https://javarouters.talentadigitalkudus.id/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.JAVAROUTERS_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "claude-sonnet-4.6",
+    stream: true,
+    messages: [{ role: "user", content: "Ceritakan sejarah Kudus singkat." }],
+  }),
+});
+
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  buffer += decoder.decode(value, { stream: true });
+  const lines = buffer.split("\n");
+  buffer = lines.pop(); // simpan baris yang belum lengkap
+  for (const line of lines) {
+    if (!line.startsWith("data: ")) continue;
+    const data = line.slice(6).trim();
+    if (data === "[DONE]") continue;
+    const text = JSON.parse(data).choices?.[0]?.delta?.content;
+    if (text) process.stdout.write(text);
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Tips
+
+- Buat parser yang tahan terhadap baris kosong dan baris `data:` yang terpotong di tengah. Simpan sisa buffer sampai baris lengkap, seperti contoh "Tanpa SDK".
+- Kalau aplikasimu berada di belakang reverse proxy (Nginx dan sejenisnya), matikan buffering untuk rute streaming supaya potongan tidak tertahan.
+- Error yang terjadi sebelum streaming dimulai dikirim sebagai respons JSON biasa dengan status HTTP error; cek status dulu sebelum membaca stream.

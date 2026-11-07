@@ -53,23 +53,33 @@ https://javarouters.talentadigitalkudus.id. The site is built with
 ## Project layout
 
 ```
-astro.config.mjs            Site config: base path, locale, sidebar (edit when adding pages)
+astro.config.mjs            Site config: base path, locale, theme
+src/sidebar.mjs             Page order: the ONE list used by the sidebar, llms.txt and the MCP index
 src/content/docs/           Pages (.md / .mdx). The file path is the URL slug.
-  index.mdx                 Landing (splash template)
+  index.mdx                 Landing (splash template, not in the sidebar)
   mulai/                    Getting started
-  api/                      API reference
-  integrasi/                Tool and app integrations
+  api/                      API reference (endpoints, errors, key balance)
+  panduan/                  Guides (streaming, tool calling, retry)
+  sdk/                      Per-language integration (Python, JS/TS, Go, PHP, Java, C#, raw HTTP)
+  integrasi/                Docs MCP, Claude Code, other tools
   akun/                     Balance, pricing, usage
-  bantuan/                  Errors, FAQ, about and license
+  bantuan/                  FAQ, about and license
 src/styles/theme.css        Emerald accent matching the gateway theme
+scripts/build-ai-files.mjs  Builds dist/llms.txt, dist/llms-full.txt, mcp-dist/pages.json
+mcp/server.ts               Read-only docs MCP server (Streamable HTTP), bundled to mcp-dist/server.mjs
 deploy/server/              Files installed on the VPS (see Deployment)
 .github/workflows/deploy.yml  Build and publish pipeline
 ```
 
 ## Writing and editing pages
 
-- Every page needs frontmatter `title` and `description`.
-- Add every new page to the `sidebar` in `astro.config.mjs`; pages are not auto-listed.
+- Every page needs frontmatter `title` and `description` (both feed llms.txt and the MCP index).
+- Add every new page to `src/sidebar.mjs`; pages are not auto-listed, and a page missing there is
+  also missing from llms.txt and the MCP server. The build fails if a listed slug has no file.
+- A new language guide under `sdk/` must also be mapped in `LANGUAGE_PAGES` and the
+  `get_integration_example` enum in `mcp/server.ts`.
+- MDX components are flattened for AI by `scripts/build-ai-files.mjs` (`Tabs`, `TabItem`, `Steps`,
+  `CardGrid`, `:::note`, `:::caution`). If you use another component, extend that script.
 - Use `.mdx` only when a page needs Starlight components (`Tabs`, `Steps`, `Card`); otherwise `.md`.
 - **Internal links must include the base path and a trailing slash**, for example
   `[Mulai cepat](/docs/mulai/mulai-cepat/)`. Links without `/docs/` break in production.
@@ -83,29 +93,54 @@ Use Bun.
 ```bash
 bun install          # install dependencies
 bun run dev          # local preview at http://localhost:4321/docs/
-bun run build        # production build into dist/ (must pass before pushing)
+bun run build        # site (dist/) + llms.txt + MCP bundle and index (mcp-dist/); must pass
 bun run preview      # serve the production build locally
+bun run mcp          # run the built MCP server locally (PORT env, default 3100)
 ```
 
 Before finishing any change, run `bun run build` and confirm it completes without errors.
 Check that every internal link points to an existing page (the build does not fail on broken links).
+After changing `mcp/server.ts`, run it locally and call every tool with an MCP client
+(for example the SDK's `Client` + `StreamableHTTPClientTransport`) before pushing.
+
+## Docs MCP server
+
+`https://javarouters.talentadigitalkudus.id/mcp` lets customers' AI assistants search and read
+these docs to write integration code. Scope is deliberately **docs only and read-only**: no login,
+no access to accounts, API keys, balances or the gateway database. Do not add account tools here;
+that would need authentication and a separate security review.
+
+- Stateless Streamable HTTP with JSON responses (`enableJsonResponse`); `GET /mcp` returns 405.
+  `GET /health` reports the page count.
+- Tools: `list_doc_pages`, `search_docs`, `get_doc_page` (slug or URL), `get_integration_example`.
+- Content is read from `pages.json` and reloaded when the file changes, so docs edits go live
+  without restarting the container. A changed `server.mjs` triggers a restart from `docs-sync.sh`.
+- Request bodies are capped at 64 KB; tool inputs are length-limited by zod schemas.
+- `@modelcontextprotocol/sdk` and `zod` are devDependencies because the server is bundled by Bun
+  into one file that runs on the stock `node:22-alpine` image.
 
 ## Deployment
 
 Pull-based, no SSH credentials in GitHub:
 
-1. A push to `main` runs `.github/workflows/deploy.yml`: it builds the site and force-pushes
-   `dist/` into the `site/` folder of the orphan branch **`deploy`**. Never edit `deploy` by hand.
+1. A push to `main` runs `.github/workflows/deploy.yml`: it builds everything and force-pushes the
+   orphan branch **`deploy`** with two folders: `site/` (static docs, llms files) and `mcp/`
+   (`server.mjs`, `pages.json`). Never edit `deploy` by hand.
 2. On the VPS (`srv-javarouters`, Ubuntu 24.04, user `ubuntu`), the systemd timer
    `javarouters-docs-sync.timer` runs `deploy/server/docs-sync.sh` every 5 minutes. The script
-   fast-forwards the clone at `/opt/javarouters/docs-site` to `origin/deploy`.
-3. The gateway's Caddy container (`javarouters-caddy`, compose project in `/opt/javarouters`)
-   mounts `/opt/javarouters/docs-site/site` read-only at `/srv/docs` and serves it under `/docs/`.
-   Everything else on the domain is proxied to the gateway. The Caddy snippet is
-   `deploy/server/Caddyfile.docs.snippet`.
+   resets the clone at `/opt/javarouters/docs-site` to `origin/deploy` and restarts the MCP
+   container only when `mcp/server.mjs` changed.
+3. Compose project `/opt/javarouters`:
+   - `javarouters-caddy` mounts `docs-site/site` read-only at `/srv/docs`; it serves `/docs/`,
+     `/llms.txt`, `/llms-full.txt`, proxies `/mcp` to `docs-mcp:3100`, and proxies everything else
+     to the gateway. Snippet: `deploy/server/Caddyfile.docs.snippet`.
+   - `javarouters-docs-mcp` (service `docs-mcp`, `node:22-alpine`, read-only, 128 MB limit) mounts
+     `docs-site/mcp` at `/app`. Service block: `deploy/server/docker-compose.docs-mcp.yml`.
 
 A change is live about 5 minutes after the workflow finishes. To publish immediately, run on the
-VPS: `sudo systemctl start javarouters-docs-sync.service`.
+VPS: `sudo systemctl start javarouters-docs-sync.service`. Restarting Caddy briefly interrupts the
+gateway API; validate a new Caddyfile first with
+`docker run --rm -e DOMAIN=... -v $PWD/Caddyfile:/etc/caddy/Caddyfile:ro caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile`.
 
 ### Constraints
 

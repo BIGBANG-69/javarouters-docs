@@ -1,0 +1,26 @@
+# Service block added under `services:` in /opt/javarouters/docker-compose.yml on the VPS.
+# Runs the bundled MCP server from the deploy branch with the stock Node image; no custom image.
+services:
+  docs-mcp:
+    image: node:22-alpine
+    container_name: javarouters-docs-mcp
+    restart: always
+    command: ["node", "/app/server.mjs"]
+    user: node
+    read_only: true
+    environment:
+      PORT: "3100"
+      NODE_ENV: production
+    volumes:
+      - ./docs-site/mcp:/app:ro
+    mem_limit: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3100/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - javarouters

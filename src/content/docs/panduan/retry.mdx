@@ -1,0 +1,128 @@
+---
+title: Retry dan penanganan error
+description: Membuat integrasi yang tahan terhadap gangguan sementara.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Gangguan sementara bisa terjadi: batas request (`429`), penyedia model sedang sibuk (`5xx`), atau koneksi terputus. Integrasi yang baik mencoba ulang error sementara dengan jeda yang makin panjang (*exponential backoff*), dan langsung berhenti untuk error yang tidak akan berubah.
+
+Error yang boleh dan tidak boleh dicoba ulang dijelaskan di [Kode error](/docs/api/kode-error/#error-mana-yang-boleh-dicoba-ulang).
+
+## Retry bawaan SDK
+
+SDK resmi OpenAI dan Anthropic (Python dan JavaScript) sudah mencoba ulang otomatis untuk `429`, `5xx`, dan error koneksi. Jumlah percobaan dan timeout bisa diatur:
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+    max_retries=4,   # default SDK: 2
+    timeout=120.0,   # detik; jawaban panjang butuh waktu
+)
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+  maxRetries: 4,     // default SDK: 2
+  timeout: 120_000,  // milidetik
+});
+```
+
+</TabItem>
+</Tabs>
+
+## Menangani error di kode
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
+```python
+import openai
+
+try:
+    response = client.chat.completions.create(
+        model="claude-sonnet-4.6",
+        messages=[{"role": "user", "content": "Halo"}],
+    )
+except openai.AuthenticationError:
+    print("API key tidak valid (401). Cek JAVAROUTERS_API_KEY.")
+except openai.PermissionDeniedError as e:
+    print("Saldo kurang atau key tidak boleh memakai model ini (403):", e.message)
+except openai.RateLimitError:
+    print("Terlalu banyak request (429). Coba lagi nanti.")
+except openai.APIStatusError as e:
+    print(f"Error {e.status_code}:", e.message)
+except openai.APIConnectionError:
+    print("Gagal terhubung ke JavaRouters.")
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+import OpenAI from "openai";
+
+try {
+  const response = await client.chat.completions.create({
+    model: "claude-sonnet-4.6",
+    messages: [{ role: "user", content: "Halo" }],
+  });
+} catch (err) {
+  if (err instanceof OpenAI.APIError) {
+    // err.status: 401, 403, 429, 503, ...
+    console.error(`Error ${err.status}:`, err.message);
+  } else {
+    throw err;
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Retry manual (tanpa SDK)
+
+Jika memanggil HTTP langsung, terapkan sendiri:
+
+```python
+import os, random, time, requests
+
+URL = "https://javarouters.talentadigitalkudus.id/v1/chat/completions"
+HEADERS = {"Authorization": f"Bearer {os.environ['JAVAROUTERS_API_KEY']}"}
+RETRYABLE = {429, 500, 502, 503}
+
+def chat(payload: dict, attempts: int = 5) -> dict:
+    for attempt in range(attempts):
+        try:
+            r = requests.post(URL, json=payload, headers=HEADERS, timeout=120)
+        except requests.ConnectionError:
+            r = None
+        if r is not None and r.ok:
+            return r.json()
+        if r is not None:
+            code = (r.json().get("error") or {}).get("code") if r.headers.get("content-type", "").startswith("application/json") else None
+            if r.status_code not in RETRYABLE or code == "model_not_found":
+                r.raise_for_status()  # error permanen: jangan diulang
+        time.sleep(min(2 ** attempt, 30) + random.random())  # 1s, 2s, 4s, ... + jitter
+    raise RuntimeError("Gagal setelah beberapa percobaan")
+```
+
+## Praktik baik lainnya
+
+- Pasang **timeout** yang cukup panjang (60–120 detik) untuk jawaban panjang, atau gunakan [streaming](/docs/panduan/streaming/).
+- Siapkan **model cadangan** di konfigurasi: jika satu model mengembalikan `503 model_not_found`, aplikasi bisa beralih ke model lain.
+- Catat isi `error.message` di log aplikasimu untuk memudahkan pelacakan.

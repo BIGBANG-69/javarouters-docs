@@ -1,0 +1,118 @@
+---
+title: MCP dokumentasi untuk AI
+description: Sambungkan dokumentasi JavaRouters ke Claude Code, Cursor, VS Code, dan asisten AI lain lewat MCP.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+JavaRouters menyediakan **MCP server dokumentasi**. Setelah disambungkan, asisten AI di editor kamu (Claude Code, Cursor, VS Code Copilot, Windsurf, dan lainnya) bisa mencari dan membaca dokumentasi ini sendiri, lalu langsung menulis kode integrasi JavaRouters di bahasa pilihanmu.
+
+```text
+https://javarouters.talentadigitalkudus.id/mcp
+```
+
+- **Transport:** Streamable HTTP
+- **Login:** tidak perlu. MCP ini hanya membaca dokumentasi publik, tidak mengakses akun atau API key kamu.
+
+## Cara menyambungkan
+
+<Tabs>
+<TabItem label="Claude Code">
+
+```bash
+claude mcp add --transport http javarouters-docs https://javarouters.talentadigitalkudus.id/mcp
+```
+
+Cek dengan `claude mcp list`, atau ketik `/mcp` di dalam Claude Code.
+
+</TabItem>
+<TabItem label="Cursor">
+
+Tambahkan ke `~/.cursor/mcp.json` (semua proyek) atau `.cursor/mcp.json` (satu proyek):
+
+```json
+{
+  "mcpServers": {
+    "javarouters-docs": {
+      "url": "https://javarouters.talentadigitalkudus.id/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="VS Code">
+
+Tambahkan ke `.vscode/mcp.json` di proyekmu:
+
+```json
+{
+  "servers": {
+    "javarouters-docs": {
+      "type": "http",
+      "url": "https://javarouters.talentadigitalkudus.id/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Codex CLI">
+
+Tambahkan ke `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.javarouters-docs]
+url = "https://javarouters.talentadigitalkudus.id/mcp"
+```
+
+</TabItem>
+<TabItem label="Klien lain">
+
+Untuk klien yang hanya mendukung MCP lewat stdio (misalnya Claude Desktop versi lama), pakai jembatan `mcp-remote` (butuh Node.js):
+
+```json
+{
+  "mcpServers": {
+    "javarouters-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://javarouters.talentadigitalkudus.id/mcp"]
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Nama menu dan lokasi file konfigurasi bisa berubah antarversi aplikasi. Kalau berbeda, cari pengaturan "MCP server" dan isi URL di atas dengan tipe HTTP.
+
+## Tools yang tersedia
+
+| Tool | Fungsi |
+|---|---|
+| `search_docs` | Mencari halaman dokumentasi dengan kata kunci, misalnya `streaming`, `error 403`, `php`. |
+| `get_doc_page` | Mengambil isi lengkap satu halaman, misalnya `api/chat-completions`. |
+| `list_doc_pages` | Menampilkan daftar semua halaman. |
+| `get_integration_example` | Mengambil panduan integrasi lengkap untuk satu bahasa: `python`, `javascript`, `typescript`, `go`, `php`, `java`, `csharp`, atau `http`. |
+
+Semua tools hanya membaca. Isinya selalu sama dengan dokumentasi yang sedang online.
+
+## Contoh perintah ke asisten AI
+
+Setelah tersambung, minta saja dengan bahasa biasa:
+
+- "Pakai MCP javarouters-docs, buatkan endpoint Laravel yang memanggil JavaRouters dengan streaming."
+- "Integrasikan JavaRouters ke aplikasi FastAPI ini. Baca dokumentasinya dulu dari MCP javarouters-docs."
+- "Kenapa request saya ke JavaRouters dapat error 403? Cek di dokumentasi."
+
+AI akan membaca dokumentasi lewat MCP lalu menulis kodenya. Kamu tetap perlu mengisi API key sendiri di environment variable `JAVAROUTERS_API_KEY`.
+
+## Tanpa MCP: llms.txt
+
+Untuk AI atau alat yang membaca web, dokumentasi juga tersedia dalam format teks:
+
+- [`/llms.txt`](https://javarouters.talentadigitalkudus.id/llms.txt): daftar semua halaman
+- [`/llms-full.txt`](https://javarouters.talentadigitalkudus.id/llms-full.txt): seluruh dokumentasi dalam satu file
+
+Kamu juga bisa menempelkan isi `llms-full.txt` langsung ke chat AI mana pun sebagai konteks.

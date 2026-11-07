@@ -1,0 +1,95 @@
+---
+title: Tool calling
+description: Membiarkan model memanggil fungsi di aplikasimu (function calling).
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Tool calling membuat model bisa meminta aplikasimu menjalankan fungsi, misalnya mengecek stok, mencari data, atau memanggil API lain, lalu memakai hasilnya untuk menjawab.
+
+:::caution
+Tidak semua model mendukung tool calling. Uji dulu model pilihanmu sebelum dipakai di produksi.
+:::
+
+## Alurnya
+
+<Steps>
+
+1. Kirim request dengan daftar `tools` (nama fungsi, deskripsi, dan skema parameternya).
+2. Jika model ingin memanggil fungsi, respons berisi `tool_calls` dengan `finish_reason: "tool_calls"`.
+3. Aplikasimu menjalankan fungsi itu sendiri. Model tidak pernah menjalankan kode.
+4. Kirim hasilnya kembali sebagai pesan `role: "tool"`, lalu model menyusun jawaban akhir.
+
+</Steps>
+
+## Contoh lengkap (Python, format OpenAI)
+
+```python
+import json
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+MODEL = "claude-sonnet-4.6"
+
+def cek_stok(produk: str) -> dict:
+    # Ganti dengan query ke database atau API milikmu.
+    return {"produk": produk, "stok": 12}
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "cek_stok",
+        "description": "Mengecek jumlah stok sebuah produk di gudang.",
+        "parameters": {
+            "type": "object",
+            "properties": {"produk": {"type": "string", "description": "Nama produk"}},
+            "required": ["produk"],
+        },
+    },
+}]
+
+messages = [{"role": "user", "content": "Stok kopi arabika masih ada berapa?"}]
+first = client.chat.completions.create(model=MODEL, messages=messages, tools=tools)
+reply = first.choices[0].message
+
+if reply.tool_calls:
+    messages.append(reply)  # simpan permintaan pemanggilan fungsi dari model
+    for call in reply.tool_calls:
+        args = json.loads(call.function.arguments)
+        result = cek_stok(**args)
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": json.dumps(result),
+        })
+    final = client.chat.completions.create(model=MODEL, messages=messages, tools=tools)
+    print(final.choices[0].message.content)
+else:
+    print(reply.content)
+```
+
+## Bentuk `tool_calls` di respons
+
+```json
+{
+  "role": "assistant",
+  "content": null,
+  "tool_calls": [
+    {
+      "id": "call_...",
+      "type": "function",
+      "function": { "name": "cek_stok", "arguments": "{\"produk\": \"kopi arabika\"}" }
+    }
+  ]
+}
+```
+
+`arguments` berupa **string JSON**; parse dulu sebelum dipakai, dan validasi isinya seperti input dari pengguna.
+
+## Format Anthropic
+
+Di endpoint [`/v1/messages`](/docs/api/messages-anthropic/), tools memakai format Anthropic: setiap tool punya `name`, `description`, dan `input_schema`. Pemanggilan fungsi muncul sebagai blok `tool_use`, dan hasilnya dikirim balik sebagai blok `tool_result` di pesan `user`. Ikuti [panduan tool use Anthropic](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) dengan base URL JavaRouters.

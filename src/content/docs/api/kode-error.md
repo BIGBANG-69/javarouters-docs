@@ -26,3 +26,11 @@ Error dikembalikan dalam format OpenAI:
 | `500`, `502`, `503` lainnya | Gangguan di sisi server atau penyedia model | Coba lagi beberapa saat kemudian, atau pakai model lain. |
 
 Isi `message` biasanya menjelaskan penyebab pastinya. Sertakan isi tersebut saat menghubungi dukungan.
+
+## Error mana yang boleh dicoba ulang
+
+| Coba ulang otomatis | Jangan dicoba ulang tanpa perubahan |
+|---|---|
+| `429`, `500`, `502`, `503` (selain `model_not_found`), timeout, koneksi terputus | `400`, `401`, `403`, `404`, `503 model_not_found` |
+
+Error di kolom kanan tidak akan berubah hanya dengan mengirim ulang; perbaiki request, key, saldo, atau nama modelnya dulu. Contoh kode retry ada di [Retry dan penanganan error](/docs/panduan/retry/).

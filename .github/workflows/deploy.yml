@@ -29,15 +29,21 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
 
-      # The VPS pulls this branch (see deploy/server/docs-sync.sh). The site goes in site/
-      # so the clone's .git directory is never inside the folder Caddy serves.
+      # Deploy branch layout: site/ (static docs, served by Caddy) and mcp/ (docs MCP server bundle
+      # and pages.json). The clone's .git directory stays outside both mounted folders.
+      - name: Assemble the deploy tree
+        run: |
+          mkdir -p publish
+          cp -r dist publish/site
+          cp -r mcp-dist publish/mcp
+
+      # The VPS pulls this branch (see deploy/server/docs-sync.sh).
       - name: Publish to the deploy branch
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: deploy
-          publish_dir: ./dist
-          destination_dir: site
+          publish_dir: ./publish
           force_orphan: true
           enable_jekyll: true # do not add a .nojekyll file; this branch is not GitHub Pages
           commit_message: 'deploy: ${{ github.sha }}'

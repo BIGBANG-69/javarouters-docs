@@ -1,0 +1,80 @@
+---
+title: Java
+description: Memakai JavaRouters dari Java dengan HttpClient bawaan JDK atau SDK OpenAI untuk Java.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+<TabItem label="HttpClient (JDK 11+)">
+
+Tanpa dependensi tambahan. Untuk mem-parse JSON respons, pakai library JSON pilihanmu (Jackson, Gson, dan lain-lain).
+
+```java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
+public class JavaRoutersExample {
+    public static void main(String[] args) throws Exception {
+        String body = """
+            {
+              "model": "claude-sonnet-4.6",
+              "messages": [{"role": "user", "content": "Buat 3 ide nama warung kopi."}]
+            }
+            """;
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://javarouters.talentadigitalkudus.id/v1/chat/completions"))
+            .timeout(Duration.ofSeconds(120))
+            .header("Authorization", "Bearer " + System.getenv("JAVAROUTERS_API_KEY"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Error " + response.statusCode() + ": " + response.body());
+        }
+        System.out.println(response.body()); // jawaban ada di choices[0].message.content
+    }
+}
+```
+
+</TabItem>
+<TabItem label="SDK OpenAI Java">
+
+Tambahkan dependensi `com.openai:openai-java` (versi terbaru) ke Maven atau Gradle.
+
+```java
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+
+public class JavaRoutersExample {
+    public static void main(String[] args) {
+        OpenAIClient client = OpenAIOkHttpClient.builder()
+            .apiKey(System.getenv("JAVAROUTERS_API_KEY"))
+            .baseUrl("https://javarouters.talentadigitalkudus.id/v1")
+            .build();
+
+        ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+            .model("claude-sonnet-4.6")
+            .addUserMessage("Buat 3 ide nama warung kopi.")
+            .build();
+
+        ChatCompletion completion = client.chat().completions().create(params);
+        System.out.println(completion.choices().get(0).message().content().orElse(""));
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Untuk Spring Boot, base URL dan key yang sama bisa dipakai di Spring AI (provider OpenAI) lewat `spring.ai.openai.base-url` dan `spring.ai.openai.api-key`. Isi base URL tanpa `/v1`, karena Spring AI menambahkan path-nya sendiri.

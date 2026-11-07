@@ -1,12 +1,25 @@
 # Site block used in /opt/javarouters/Caddyfile on the VPS (global options block omitted).
-# The docs container mount: /opt/javarouters/docs-site/site -> /srv/docs (read-only).
+# Mounts on the caddy container: /opt/javarouters/docs-site/site -> /srv/docs (read-only).
 {$DOMAIN} {
+	# JavaRouters docs (repo BIGBANG-69/javarouters-docs), synced by javarouters-docs-sync.timer.
 	redir /docs /docs/ 308
 
 	handle_path /docs/* {
 		root * /srv/docs
 		header /_astro/* Cache-Control "public, max-age=31536000, immutable"
 		file_server
+	}
+
+	# llms.txt at the site root as well (https://llmstxt.org).
+	@llms path /llms.txt /llms-full.txt
+	handle @llms {
+		root * /srv/docs
+		file_server
+	}
+
+	# Read-only docs MCP server (container javarouters-docs-mcp, see docker-compose.docs-mcp.yml).
+	handle /mcp {
+		reverse_proxy docs-mcp:3100
 	}
 
 	handle {

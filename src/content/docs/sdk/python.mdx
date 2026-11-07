@@ -1,0 +1,123 @@
+---
+title: Python
+description: Memakai JavaRouters dari Python dengan SDK OpenAI, SDK Anthropic, atau LangChain.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## SDK OpenAI (disarankan)
+
+```bash
+pip install openai
+```
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+response = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    messages=[
+        {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+        {"role": "user", "content": "Buat 3 ide nama warung kopi."},
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+### Streaming
+
+```python
+stream = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    stream=True,
+    messages=[{"role": "user", "content": "Jelaskan REST API singkat."}],
+)
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+### Async (FastAPI, aiohttp, dll.)
+
+```python
+import asyncio, os
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+async def main():
+    response = await client.chat.completions.create(
+        model="claude-sonnet-4.6",
+        messages=[{"role": "user", "content": "Halo"}],
+    )
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```
+
+## SDK Anthropic
+
+```bash
+pip install anthropic
+```
+
+```python
+import os
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="https://javarouters.talentadigitalkudus.id",  # tanpa /v1
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+message = client.messages.create(
+    model="claude-sonnet-4.6",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Buat 3 ide nama warung kopi."}],
+)
+print(message.content[0].text)
+```
+
+## LangChain
+
+```bash
+pip install langchain-openai
+```
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    model="claude-sonnet-4.6",
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+print(llm.invoke("Apa itu LangChain?").content)
+```
+
+## Tanpa SDK (requests)
+
+```python
+import os, requests
+
+r = requests.post(
+    "https://javarouters.talentadigitalkudus.id/v1/chat/completions",
+    headers={"Authorization": f"Bearer {os.environ['JAVAROUTERS_API_KEY']}"},
+    json={"model": "claude-sonnet-4.6", "messages": [{"role": "user", "content": "Halo"}]},
+    timeout=120,
+)
+r.raise_for_status()
+print(r.json()["choices"][0]["message"]["content"])
+```
+
+Lihat juga: [Tool calling](/docs/panduan/tool-calling/), [Retry dan penanganan error](/docs/panduan/retry/).

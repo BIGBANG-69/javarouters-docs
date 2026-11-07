@@ -1,6 +1,6 @@
 ---
-title: Chat Completions (format OpenAI)
-description: Mengirim percakapan ke model apa pun lewat endpoint yang kompatibel dengan OpenAI.
+title: Chat Completions
+description: POST /v1/chat/completions — percakapan dengan model apa pun memakai format OpenAI.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -9,23 +9,55 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 POST https://javarouters.talentadigitalkudus.id/v1/chat/completions
 ```
 
-Endpoint ini mengikuti format [Chat Completions OpenAI](https://platform.openai.com/docs/api-reference/chat). Endpoint ini bisa dipakai untuk semua model yang dijual, termasuk Claude, Gemini dan DeepSeek, bukan hanya GPT.
+Endpoint utama JavaRouters, mengikuti format [Chat Completions OpenAI](https://platform.openai.com/docs/api-reference/chat). Endpoint ini bisa dipakai untuk **semua model yang dijual**, termasuk Claude, Gemini, dan DeepSeek, bukan hanya GPT.
 
-## Parameter utama
+## Header
 
-| Parameter | Wajib | Keterangan |
-|---|---|---|
-| `model` | Ya | Nama model persis seperti di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
-| `messages` | Ya | Daftar pesan `{ "role": "system" \| "user" \| "assistant", "content": "..." }`. |
-| `stream` | Tidak | `true` untuk menerima jawaban bertahap (Server-Sent Events). |
-| `max_tokens` | Tidak | Batas jumlah token jawaban. |
-| `temperature` | Tidak | Tingkat variasi jawaban. |
+| Header | Nilai |
+|---|---|
+| `Authorization` | `Bearer sk-...` |
+| `Content-Type` | `application/json` |
 
-Parameter lain dari format OpenAI diteruskan ke model. Dukungannya tergantung model yang dipilih.
+## Body request
 
-## Contoh dengan streaming
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `model` | string | Ya | Nama model dari [daftar model](/docs/api/daftar-model/), misalnya `claude-sonnet-4.6`. |
+| `messages` | array | Ya | Riwayat percakapan. Lihat [Format messages](#format-messages). |
+| `stream` | boolean | Tidak | `true` untuk menerima jawaban bertahap. Lihat [Streaming](/docs/panduan/streaming/). |
+| `stream_options` | object | Tidak | `{"include_usage": true}` meminta jumlah token di chunk terakhir saat streaming. |
+| `max_tokens` | integer | Tidak | Batas jumlah token jawaban. |
+| `temperature` | number | Tidak | Variasi jawaban. Nilai kecil membuat jawaban lebih konsisten. |
+| `top_p` | number | Tidak | Alternatif `temperature` (nucleus sampling). |
+| `stop` | string / array | Tidak | Teks yang menghentikan jawaban. |
+| `tools` | array | Tidak | Daftar fungsi yang boleh dipanggil model. Lihat [Tool calling](/docs/panduan/tool-calling/). |
+| `tool_choice` | string / object | Tidak | `auto`, `none`, `required`, atau fungsi tertentu. |
+| `response_format` | object | Tidak | Misalnya `{"type": "json_object"}` untuk meminta jawaban JSON. |
+| `user` | string | Tidak | ID pengguna akhir di aplikasimu, untuk pelacakan. |
 
-<Tabs>
+Parameter lain dari format OpenAI diteruskan ke model. **Dukungan setiap parameter tergantung model**; parameter yang tidak didukung bisa diabaikan atau menghasilkan error `400`.
+
+### Format messages
+
+```json
+[
+  { "role": "system", "content": "Kamu asisten yang menjawab dalam bahasa Indonesia." },
+  { "role": "user", "content": "Apa itu API gateway?" },
+  { "role": "assistant", "content": "API gateway adalah ..." },
+  { "role": "user", "content": "Beri contoh pemakaiannya." }
+]
+```
+
+| Role | Fungsi |
+|---|---|
+| `system` | Instruksi umum untuk model. |
+| `user` | Pesan dari pengguna. |
+| `assistant` | Jawaban model sebelumnya (untuk menyimpan konteks percakapan). |
+| `tool` | Hasil pemanggilan fungsi. Lihat [Tool calling](/docs/panduan/tool-calling/). |
+
+## Contoh request
+
+<Tabs syncKey="lang">
 <TabItem label="curl">
 
 ```bash
@@ -34,10 +66,10 @@ curl https://javarouters.talentadigitalkudus.id/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-sonnet-4.6",
-    "stream": true,
+    "max_tokens": 512,
     "messages": [
       {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
-      {"role": "user", "content": "Jelaskan apa itu API gateway."}
+      {"role": "user", "content": "Apa itu API gateway?"}
     ]
   }'
 ```
@@ -54,21 +86,20 @@ client = OpenAI(
     api_key=os.environ["JAVAROUTERS_API_KEY"],
 )
 
-stream = client.chat.completions.create(
+response = client.chat.completions.create(
     model="claude-sonnet-4.6",
-    stream=True,
+    max_tokens=512,
     messages=[
         {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
-        {"role": "user", "content": "Jelaskan apa itu API gateway."},
+        {"role": "user", "content": "Apa itu API gateway?"},
     ],
 )
-for chunk in stream:
-    if chunk.choices and chunk.choices[0].delta.content:
-        print(chunk.choices[0].delta.content, end="")
+print(response.choices[0].message.content)
+print(response.usage)
 ```
 
 </TabItem>
-<TabItem label="Node.js">
+<TabItem label="JavaScript">
 
 ```js
 import OpenAI from "openai";
@@ -78,22 +109,58 @@ const client = new OpenAI({
   apiKey: process.env.JAVAROUTERS_API_KEY,
 });
 
-const stream = await client.chat.completions.create({
+const response = await client.chat.completions.create({
   model: "claude-sonnet-4.6",
-  stream: true,
+  max_tokens: 512,
   messages: [
     { role: "system", content: "Jawab dalam bahasa Indonesia." },
-    { role: "user", content: "Jelaskan apa itu API gateway." },
+    { role: "user", content: "Apa itu API gateway?" },
   ],
 });
-for await (const chunk of stream) {
-  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
-}
+console.log(response.choices[0].message.content);
+console.log(response.usage);
 ```
 
 </TabItem>
 </Tabs>
 
+Contoh untuk Go, PHP, Java, C#, dan bahasa lain ada di bagian [SDK dan bahasa](/docs/sdk/python/).
+
 ## Respons
 
-Respons mengikuti format OpenAI. Jumlah token yang dipakai ada di field `usage` (`prompt_tokens`, `completion_tokens`), dan biaya request dihitung dari angka tersebut.
+```json
+{
+  "id": "chatcmpl-...",
+  "object": "chat.completion",
+  "created": 1762560000,
+  "model": "claude-sonnet-4.6",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "API gateway adalah ..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 24,
+    "completion_tokens": 180,
+    "total_tokens": 204
+  }
+}
+```
+
+| Field | Keterangan |
+|---|---|
+| `choices[0].message.content` | Teks jawaban. |
+| `choices[0].message.tool_calls` | Ada jika model memanggil fungsi. |
+| `choices[0].finish_reason` | `stop` (selesai), `length` (terpotong `max_tokens`), atau `tool_calls`. |
+| `usage` | Jumlah token. Biaya request dihitung dari angka ini. |
+
+Angka di contoh di atas hanya ilustrasi.
+
+## Streaming
+
+Dengan `"stream": true`, jawaban dikirim bertahap sebagai Server-Sent Events. Format chunk dan contoh membacanya ada di [Streaming](/docs/panduan/streaming/).
