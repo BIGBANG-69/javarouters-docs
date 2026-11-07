@@ -27,6 +27,20 @@ Error dikembalikan dalam format OpenAI:
 
 Isi `message` biasanya menjelaskan penyebab pastinya. Sertakan isi tersebut saat menghubungi dukungan.
 
+## 403 dengan teks `error code: 1010`
+
+Jika respons `403` berisi teks biasa `error code: 1010` (bukan JSON), request ditolak oleh lapisan keamanan jaringan sebelum sampai ke JavaRouters, karena header `User-Agent` dari library HTTP-mu diblokir. Ini terjadi pada `urllib` bawaan Python. Solusinya, pakai library lain (SDK OpenAI, `requests`, atau `httpx`), atau kirim header `User-Agent` sendiri:
+
+```python
+import urllib.request
+
+req = urllib.request.Request(url, data=body, headers={
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json",
+    "User-Agent": "aplikasi-saya/1.0",
+})
+```
+
 ## Error mana yang boleh dicoba ulang
 
 | Coba ulang otomatis | Jangan dicoba ulang tanpa perubahan |

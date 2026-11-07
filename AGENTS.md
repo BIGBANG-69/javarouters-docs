@@ -47,6 +47,11 @@ https://javarouters.talentadigitalkudus.id. The site is built with
    - Errors use the OpenAI error shape. `401` invalid key; `403` with
      `insufficient_user_quota` when balance is short, or when a key is restricted from a model;
      `429` rate limit; `503` with `model_not_found` for an unknown or unavailable model.
+   - Cloudflare in front of the domain returns `403` plain text `error code: 1010` for the
+     `Python-urllib` user-agent (checked 2026-11-08; requests, httpx, the OpenAI SDKs, okhttp,
+     Java HttpClient, Guzzle, Go, axios, node, curl, Dart, Ruby and an empty UA all pass).
+   - Key balance: `GET /v1/dashboard/billing/subscription` (`hard_limit_usd` = key quota in USD,
+     `100000000` when unlimited) and `/v1/dashboard/billing/usage` (`total_usage` in US cents).
    - Console menus: **API Keys** (`/keys`), **Dompet** / Wallet (`/wallet`), **Usage Logs**.
    - Balances and prices display in USD. Only text models are sold (no image/video yet).
 
