@@ -1,0 +1,143 @@
+---
+title: Claude Code
+description: Menjalankan Claude Code (CLI dan ekstensi VS Code) dengan API key JavaRouters, termasuk pemetaan nama model.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+[Claude Code](https://code.claude.com/docs) bisa memakai JavaRouters sebagai pengganti akun Anthropic. Kamu cukup mengganti alamat API dan key, lalu memberi tahu Claude Code nama model yang dipakai di JavaRouters.
+
+Yang kamu butuhkan:
+
+- API key dari menu **API Keys** di konsol, dengan saldo yang cukup.
+- Claude Code versi terbaru (`claude update`).
+
+## Pasang
+
+<Steps>
+
+1. **Buka file pengaturan Claude Code**
+
+   File ini berlaku untuk semua proyek. Buat filenya kalau belum ada.
+
+   - macOS dan Linux: `~/.claude/settings.json`
+   - Windows: `%USERPROFILE%\.claude\settings.json`
+
+2. **Isi alamat, key, dan nama model**
+
+   ```json
+   {
+     "env": {
+       "ANTHROPIC_BASE_URL": "https://javarouters.talentadigitalkudus.id",
+       "ANTHROPIC_AUTH_TOKEN": "sk-...",
+       "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5.5",
+       "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5.5",
+       "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-5.5",
+       "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-fable-5.1"
+     }
+   }
+   ```
+
+   Kalau file sudah berisi pengaturan lain, tambahkan baris-baris di atas ke dalam blok `"env"` yang sudah ada.
+
+3. **Jalankan Claude Code**
+
+   ```bash
+   claude
+   ```
+
+   Kalau sebelumnya kamu login dengan akun Claude dan muncul peringatan tentang dua sumber login, jalankan `/logout`. Setelah itu yang dipakai hanya API key JavaRouters.
+
+4. **Cek koneksi**
+
+   Ketik `/status`. Baris **Anthropic base URL** harus menunjukkan `https://javarouters.talentadigitalkudus.id`, dan baris **Auth token** menyebut `ANTHROPIC_AUTH_TOKEN`. Lalu kirim satu pesan; kalau dijawab, koneksi sudah benar.
+
+</Steps>
+
+## Kenapa nama model perlu diisi
+
+Claude Code memakai nama model versi Anthropic, misalnya `claude-sonnet-5-5` (pakai tanda hubung). Di JavaRouters namanya `claude-sonnet-5.5` (pakai titik). Tanpa pemetaan, request ditolak karena nama modelnya tidak dikenal.
+
+Empat variabel `ANTHROPIC_DEFAULT_..._MODEL` di atas memetakan pilihan `opus`, `sonnet`, `haiku` dan `fable` di Claude Code ke nama JavaRouters:
+
+| Di Claude Code | Variabel | Contoh nilai |
+|---|---|---|
+| `/model opus` | `ANTHROPIC_DEFAULT_OPUS_MODEL` | `claude-opus-5.5` |
+| `/model sonnet` | `ANTHROPIC_DEFAULT_SONNET_MODEL` | `claude-sonnet-5.5` |
+| `/model haiku` | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `claude-haiku-5.5` |
+| `/model fable` | `ANTHROPIC_DEFAULT_FABLE_MODEL` | `claude-fable-5.1` |
+
+`ANTHROPIC_DEFAULT_HAIKU_MODEL` juga dipakai untuk tugas latar belakang, seperti membuat judul sesi, jadi isi juga yang ini.
+
+Kamu bebas mengganti nilainya dengan model Claude lain dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing), misalnya model yang lebih murah untuk `haiku`. Untuk sekali pakai, kamu juga bisa mengetik nama lengkapnya, misalnya `/model claude-opus-4.8`.
+
+:::note
+Claude Code memakai format Anthropic, jadi pilih model **Claude**. Model lain seperti GPT atau DeepSeek lebih cocok dipakai lewat [Codex](/docs/integrasi/codex/) atau [OpenCode](/docs/integrasi/opencode/).
+:::
+
+## Hanya untuk satu terminal
+
+Kalau tidak mau mengubah file pengaturan, set variabelnya di terminal. Pengaturan ini hilang saat terminal ditutup.
+
+<Tabs>
+<TabItem label="macOS / Linux">
+
+```bash
+export ANTHROPIC_BASE_URL=https://javarouters.talentadigitalkudus.id
+export ANTHROPIC_AUTH_TOKEN=$JAVAROUTERS_API_KEY
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5.5
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-5.5
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-5.5
+export ANTHROPIC_DEFAULT_FABLE_MODEL=claude-fable-5.1
+claude
+```
+
+</TabItem>
+<TabItem label="Windows (PowerShell)">
+
+```powershell
+$env:ANTHROPIC_BASE_URL = "https://javarouters.talentadigitalkudus.id"
+$env:ANTHROPIC_AUTH_TOKEN = $env:JAVAROUTERS_API_KEY
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL = "claude-opus-5.5"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL = "claude-sonnet-5.5"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL = "claude-haiku-5.5"
+$env:ANTHROPIC_DEFAULT_FABLE_MODEL = "claude-fable-5.1"
+claude
+```
+
+</TabItem>
+</Tabs>
+
+## Ekstensi VS Code
+
+Ekstensi Claude Code untuk VS Code memeriksa login sebelum berjalan, jadi isi variabelnya di pengaturan VS Code. Buka Command Palette, pilih **Preferences: Open User Settings (JSON)**, lalu tambahkan:
+
+```json
+{
+  "claudeCode.environmentVariables": [
+    { "name": "ANTHROPIC_BASE_URL", "value": "https://javarouters.talentadigitalkudus.id" },
+    { "name": "ANTHROPIC_AUTH_TOKEN", "value": "sk-..." },
+    { "name": "ANTHROPIC_DEFAULT_OPUS_MODEL", "value": "claude-opus-5.5" },
+    { "name": "ANTHROPIC_DEFAULT_SONNET_MODEL", "value": "claude-sonnet-5.5" },
+    { "name": "ANTHROPIC_DEFAULT_HAIKU_MODEL", "value": "claude-haiku-5.5" },
+    { "name": "ANTHROPIC_DEFAULT_FABLE_MODEL", "value": "claude-fable-5.1" }
+  ]
+}
+```
+
+## Kalau ada masalah
+
+| Gejala | Penyebab dan solusi |
+|---|---|
+| Error `401` | Key salah atau sudah dihapus. Salin ulang key dari menu **API Keys**. |
+| `There's an issue with the selected model` atau error `model_not_found` | Nama model tidak ada di JavaRouters. Cek tabel pemetaan di atas dan nama di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| Error `403` dengan `insufficient_user_quota` | Saldo habis. Isi saldo di menu **Dompet**. |
+| `Failed to authenticate. API Error: 403 token quota is not enough` | Bukan masalah login: batas saldo pada API key ini lebih kecil dari perkiraan biaya request. Model besar seperti Opus dan Fable butuh ruang lebih. Naikkan batas key di menu **API Keys**, atau pakai key tanpa batas. |
+| Error `400` yang menyebut `thinking` atau `adaptive` | Model itu tidak menerima mode berpikir yang diminta Claude Code. Untuk model 4.6, set `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` di blok `env`, atau pilih model lain. |
+| Claude Code tetap meminta login | Key belum terbaca. Pastikan `ANTHROPIC_AUTH_TOKEN` ada di `~/.claude/settings.json` (bukan di `.claude/settings.json` milik proyek), lalu buka ulang Claude Code. |
+
+Biaya setiap request bisa dicek di menu **Usage Logs** di konsol.
+
+:::caution
+Jangan taruh key di `.claude/settings.json` di dalam folder proyek. File itu biasanya ikut ter-commit ke Git dan terbaca orang lain.
+:::

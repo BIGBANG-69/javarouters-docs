@@ -1,0 +1,94 @@
+---
+title: Codex
+description: Menjalankan OpenAI Codex CLI dengan API key JavaRouters lewat custom model provider.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+[Codex](https://learn.chatgpt.com/docs) bisa memakai JavaRouters sebagai *model provider*. Pengaturannya ada di file `config.toml` milik Codex.
+
+Yang kamu butuhkan:
+
+- API key dari menu **API Keys** di konsol, dengan saldo yang cukup.
+- Codex CLI versi terbaru.
+
+:::note
+Codex memakai format OpenAI Responses (`/v1/responses`). Di JavaRouters, pakai model **GPT**, misalnya `gpt-5.3-codex` atau `gpt-6-sol`. Untuk model Claude, pakai [Claude Code](/docs/integrasi/claude-code/); untuk model lain, pakai [OpenCode](/docs/integrasi/opencode/).
+:::
+
+## Pasang
+
+<Steps>
+
+1. **Simpan API key di environment variable**
+
+   <Tabs>
+   <TabItem label="macOS / Linux">
+
+   Tambahkan baris ini ke `~/.zshrc` atau `~/.bashrc`, lalu buka terminal baru:
+
+   ```bash
+   export JAVAROUTERS_API_KEY="sk-..."
+   ```
+
+   </TabItem>
+   <TabItem label="Windows">
+
+   Jalankan sekali di PowerShell atau Command Prompt, lalu buka terminal baru:
+
+   ```powershell
+   setx JAVAROUTERS_API_KEY "sk-..."
+   ```
+
+   </TabItem>
+   </Tabs>
+
+2. **Buka file konfigurasi Codex**
+
+   - macOS dan Linux: `~/.codex/config.toml`
+   - Windows: `%USERPROFILE%\.codex\config.toml`
+
+   Buat filenya kalau belum ada.
+
+3. **Tambahkan JavaRouters sebagai provider**
+
+   ```toml
+   model = "gpt-5.3-codex"
+   model_provider = "javarouters"
+
+   [model_providers.javarouters]
+   name = "JavaRouters"
+   base_url = "https://javarouters.talentadigitalkudus.id/v1"
+   env_key = "JAVAROUTERS_API_KEY"
+   wire_api = "responses"
+   ```
+
+   `model` dan `model_provider` harus berada di bagian atas file, sebelum baris `[model_providers.javarouters]`. Kalau file sudah berisi `model` atau `model_provider`, ganti nilainya, jangan ditulis dua kali.
+
+4. **Jalankan Codex**
+
+   ```bash
+   codex
+   ```
+
+   Untuk memakai model lain sekali jalan: `codex -m gpt-6-sol`.
+
+   Codex bisa menampilkan peringatan `Model metadata for ... not found`. Peringatan itu muncul untuk nama model yang tidak dikenal Codex dan boleh diabaikan selama model menjawab.
+
+</Steps>
+
+## Catatan
+
+- `base_url` **memakai** `/v1` di akhir.
+- Pengaturan provider harus di `config.toml` milik pengguna (folder `.codex` di folder home). File `.codex/config.toml` di dalam folder proyek tidak boleh mengatur `model_provider`.
+- Nama model harus persis seperti di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing).
+- Biaya setiap request bisa dicek di menu **Usage Logs** di konsol.
+
+## Kalau ada masalah
+
+| Gejala | Penyebab dan solusi |
+|---|---|
+| Error `401` | `JAVAROUTERS_API_KEY` kosong atau salah. Di Windows, buka terminal baru setelah `setx`. Cek dengan `echo $JAVAROUTERS_API_KEY` (macOS/Linux) atau `echo %JAVAROUTERS_API_KEY%` (Command Prompt). |
+| Error `model_not_found` atau `503` | Nama model tidak ada, atau model itu tidak mendukung format Responses. Pakai model GPT dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| `upstream request failed; please retry` | Model itu sedang tidak tersedia. Coba lagi nanti, atau pakai model GPT lain. |
+| Error `403` dengan `insufficient_user_quota` | Saldo habis. Isi saldo di menu **Dompet**. |

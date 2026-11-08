@@ -8,6 +8,10 @@ hero:
     - text: Mulai cepat
       link: /docs/mulai/mulai-cepat/
       icon: right-arrow
+    - text: Pakai di Claude Code, Codex, OpenCode
+      link: /docs/integrasi/claude-code/
+      icon: laptop
+      variant: secondary
     - text: Lihat model dan harga
       link: https://javarouters.talentadigitalkudus.id/pricing
       icon: external
@@ -23,6 +27,10 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 	</Card>
 	<Card title="Kompatibel Anthropic" icon="puzzle">
 		Endpoint `/v1/messages` untuk SDK Anthropic dan Claude Code.
+	</Card>
+	<Card title="Alat coding AI" icon="laptop">
+		Panduan untuk [Claude Code](/docs/integrasi/claude-code/), [Codex](/docs/integrasi/codex/),
+		[OpenCode](/docs/integrasi/opencode/), serta [Cline, Cursor dan Aider](/docs/integrasi/alat-lain/).
 	</Card>
 	<Card title="Bayar sesuai pemakaian" icon="document">
 		Isi saldo, buat API key, lalu saldo terpotong per request.

@@ -1,0 +1,127 @@
+---
+title: OpenCode
+description: Menjalankan OpenCode dengan API key JavaRouters sebagai custom provider yang kompatibel dengan OpenAI.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+[OpenCode](https://opencode.ai/docs) bisa memakai JavaRouters sebagai *custom provider*. Semua model JavaRouters mendukung format OpenAI, jadi Claude, GPT, DeepSeek, Kimi, Qwen dan model lain bisa dipakai dari satu provider.
+
+Yang kamu butuhkan:
+
+- API key dari menu **API Keys** di konsol, dengan saldo yang cukup.
+- OpenCode versi terbaru.
+
+## Pasang
+
+<Steps>
+
+1. **Simpan API key di environment variable**
+
+   <Tabs>
+   <TabItem label="macOS / Linux">
+
+   Tambahkan baris ini ke `~/.zshrc` atau `~/.bashrc`, lalu buka terminal baru:
+
+   ```bash
+   export JAVAROUTERS_API_KEY="sk-..."
+   ```
+
+   </TabItem>
+   <TabItem label="Windows">
+
+   Jalankan sekali di PowerShell atau Command Prompt, lalu buka terminal baru:
+
+   ```powershell
+   setx JAVAROUTERS_API_KEY "sk-..."
+   ```
+
+   </TabItem>
+   </Tabs>
+
+2. **Buat file konfigurasi OpenCode**
+
+   Pilih salah satu:
+
+   - Untuk semua proyek, macOS dan Linux: `~/.config/opencode/opencode.json`
+   - Untuk semua proyek, Windows: `C:\Users\<nama>\.config\opencode\opencode.json`
+   - Untuk satu proyek: `opencode.json` di folder utama proyek
+
+   Kalau file sudah ada, tambahkan bagian `javarouters` ke dalam `"provider"` yang sudah ada.
+
+3. **Tambahkan JavaRouters sebagai provider**
+
+   ```json
+   {
+     "$schema": "https://opencode.ai/config.json",
+     "model": "javarouters/claude-sonnet-5.5",
+     "provider": {
+       "javarouters": {
+         "npm": "@ai-sdk/openai-compatible",
+         "name": "JavaRouters",
+         "options": {
+           "baseURL": "https://javarouters.talentadigitalkudus.id/v1",
+           "apiKey": "{env:JAVAROUTERS_API_KEY}"
+         },
+         "models": {
+           "claude-sonnet-5.5": { "name": "Claude Sonnet 5.5" },
+           "gpt-5.3-codex": { "name": "GPT-5.3 Codex" },
+           "deepseek-v4-pro": { "name": "DeepSeek V4 Pro" }
+         }
+       }
+     }
+   }
+   ```
+
+   Model yang muncul di OpenCode hanya yang ditulis di bagian `models`. Tambahkan nama lain dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing), persis seperti tertulis di sana.
+
+4. **Jalankan OpenCode**
+
+   ```bash
+   opencode
+   ```
+
+   Ganti model kapan saja dengan perintah `/models`. Model JavaRouters tampil di bawah nama **JavaRouters**.
+
+</Steps>
+
+## Format konfigurasi OpenCode versi baru
+
+Dokumentasi OpenCode terbaru memakai format lain: `providers` (jamak), `package` dan `settings`. Kalau model JavaRouters tidak muncul di `/models` dengan format di atas, pakai format ini:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "javarouters/claude-sonnet-5.5",
+  "providers": {
+    "javarouters": {
+      "name": "JavaRouters",
+      "env": ["JAVAROUTERS_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://javarouters.talentadigitalkudus.id/v1"
+      },
+      "models": {
+        "claude-sonnet-5.5": { "name": "Claude Sonnet 5.5" },
+        "gpt-5.3-codex": { "name": "GPT-5.3 Codex" },
+        "deepseek-v4-pro": { "name": "DeepSeek V4 Pro" }
+      }
+    }
+  }
+}
+```
+
+## Catatan
+
+- `baseURL` **memakai** `/v1` di akhir.
+- Di bagian `"model"`, nama model ditulis dengan awalan provider: `javarouters/<nama-model>`.
+- Biaya setiap request bisa dicek di menu **Usage Logs** di konsol.
+
+## Kalau ada masalah
+
+| Gejala | Penyebab dan solusi |
+|---|---|
+| Error `401` | `JAVAROUTERS_API_KEY` kosong atau salah. Di Windows, buka terminal baru setelah `setx`. |
+| Model tidak muncul di `/models` | Nama model belum ditambahkan di bagian `models`, atau file konfigurasi tidak terbaca. Cek lokasi file dan pastikan isinya JSON yang valid. |
+| Error `model_not_found` atau `503` | Nama model salah ketik. Salin dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| Error `403` dengan `insufficient_user_quota` | Saldo habis. Isi saldo di menu **Dompet**. |

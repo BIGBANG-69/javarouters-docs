@@ -55,6 +55,21 @@ https://javarouters.talentadigitalkudus.id. The site is built with
    - Key balance: `GET /v1/dashboard/billing/subscription` (`hard_limit_usd` = key quota in USD,
      `100000000` when unlimited) and `/v1/dashboard/billing/usage` (`total_usage` in US cents).
    - Console menus: **API Keys** (`/keys`), **Dompet** / Wallet (`/wallet`), **Usage Logs**.
+8. AI coding tool pages (`integrasi/`), each run end to end against production on 2026-11-08 with a
+   temporary key. Re-test before changing a config snippet; tool config formats change often.
+   - Claude Code (CLI): JavaRouters model names use dots (`claude-sonnet-5.5`) while Claude Code
+     sends Anthropic IDs with dashes, so `ANTHROPIC_DEFAULT_OPUS/SONNET/HAIKU/FABLE_MODEL` must map
+     the aliases. Verified `opus`, `sonnet`, `haiku`; adaptive thinking is accepted. A key whose
+     own quota is below the pre-consume estimate shows `Failed to authenticate. API Error: 403
+     token quota is not enough`.
+   - Codex CLI 0.154.0: custom provider with `wire_api = "responses"`. `/v1/responses` reaches the
+     upstream as is, so only GPT models work there (verified `gpt-5.3-codex`, `gpt-6-sol`; at the
+     time `gpt-5.5`/`gpt-5.4` returned `upstream request failed`).
+   - OpenCode 1.18.35 reads only the older `provider` / `npm: @ai-sdk/openai-compatible` /
+     `options` format (verified). The newer `providers` / `package` / `settings` format from the
+     current OpenCode docs is listed as an alternative and was not run against JavaRouters.
+   - Responses never carry upstream model names, upstream headers or upstream `usage.cost`; the
+     gateway removes them. Do not document headers such as `x-ratelimit-*` from upstream.
    - Balances and prices display in USD. Only text models are sold (no image/video yet).
 
 ## Project layout

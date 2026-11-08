@@ -10,6 +10,15 @@ export const sidebar = [
 		],
 	},
 	{
+		label: 'Alat coding AI',
+		items: [
+			{ label: 'Claude Code', slug: 'integrasi/claude-code' },
+			{ label: 'Codex', slug: 'integrasi/codex' },
+			{ label: 'OpenCode', slug: 'integrasi/opencode' },
+			{ label: 'Cline, Cursor, Aider dan lainnya', slug: 'integrasi/alat-lain' },
+		],
+	},
+	{
 		label: 'Referensi API',
 		items: [
 			{ label: 'Ringkasan API', slug: 'api/ringkasan' },
@@ -42,11 +51,7 @@ export const sidebar = [
 	},
 	{
 		label: 'Integrasi',
-		items: [
-			{ label: 'MCP dokumentasi untuk AI', slug: 'integrasi/mcp' },
-			{ label: 'Claude Code', slug: 'integrasi/claude-code' },
-			{ label: 'Alat dan aplikasi lain', slug: 'integrasi/alat-lain' },
-		],
+		items: [{ label: 'MCP dokumentasi untuk AI', slug: 'integrasi/mcp' }],
 	},
 	{
 		label: 'Akun',
