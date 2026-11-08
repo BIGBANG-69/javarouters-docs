@@ -1,0 +1,60 @@
+# JavaRouters
+
+> JavaRouters adalah gateway API AI: satu API key untuk banyak model AI (Claude, GPT, Gemini, DeepSeek, dan lainnya) lewat endpoint yang kompatibel dengan OpenAI (`/v1/chat/completions`) dan Anthropic (`/v1/messages`). Base URL OpenAI: https://javarouters.talentadigitalkudus.id/v1. Base URL Anthropic: https://javarouters.talentadigitalkudus.id. Dokumentasi berbahasa Indonesia.
+
+Daftar model dan harga yang selalu terbaru: https://javarouters.talentadigitalkudus.id/pricing (atau GET https://javarouters.talentadigitalkudus.id/v1/models dengan API key).
+MCP server dokumentasi (Streamable HTTP): https://javarouters.talentadigitalkudus.id/mcp
+
+## Mulai
+
+- [Pengenalan](https://javarouters.talentadigitalkudus.id/docs/mulai/pengenalan/): Apa itu JavaRouters dan untuk siapa.
+- [Mulai cepat](https://javarouters.talentadigitalkudus.id/docs/mulai/mulai-cepat/): Dari daftar akun sampai request pertama dalam beberapa menit.
+
+## Alat coding AI
+
+- [Claude Code](https://javarouters.talentadigitalkudus.id/docs/integrasi/claude-code/): Menjalankan Claude Code (CLI dan ekstensi VS Code) dengan API key JavaRouters, termasuk pemetaan nama model.
+- [Codex](https://javarouters.talentadigitalkudus.id/docs/integrasi/codex/): Menjalankan OpenAI Codex CLI dengan API key JavaRouters lewat custom model provider.
+- [OpenCode](https://javarouters.talentadigitalkudus.id/docs/integrasi/opencode/): Menjalankan OpenCode dengan API key JavaRouters sebagai custom provider yang kompatibel dengan OpenAI.
+- [Alat dan aplikasi lain](https://javarouters.talentadigitalkudus.id/docs/integrasi/alat-lain/): Memakai JavaRouters di Cline, Roo Code, Kilo Code, Cursor, Aider, Cherry Studio dan aplikasi lain.
+
+## Referensi API
+
+- [Ringkasan API](https://javarouters.talentadigitalkudus.id/docs/api/ringkasan/): Base URL, autentikasi, daftar endpoint, dan format respons JavaRouters.
+- [Chat Completions](https://javarouters.talentadigitalkudus.id/docs/api/chat-completions/): POST /v1/chat/completions — percakapan dengan model apa pun memakai format OpenAI.
+- [Messages (format Anthropic)](https://javarouters.talentadigitalkudus.id/docs/api/messages-anthropic/): POST /v1/messages — memakai SDK Anthropic dan Claude Code dengan JavaRouters.
+- [Daftar model](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/): GET /v1/models — model yang bisa dipakai API key kamu.
+- [Saldo dan pemakaian key](https://javarouters.talentadigitalkudus.id/docs/api/saldo-key/): Mengecek batas saldo dan total pemakaian sebuah API key lewat API.
+- [Kode error](https://javarouters.talentadigitalkudus.id/docs/api/kode-error/): Arti kode status HTTP dari JavaRouters dan cara mengatasinya.
+
+## Panduan
+
+- [Streaming](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/): Menerima jawaban model secara bertahap dengan Server-Sent Events.
+- [Tool calling](https://javarouters.talentadigitalkudus.id/docs/panduan/tool-calling/): Membiarkan model memanggil fungsi di aplikasimu (function calling).
+- [Retry dan penanganan error](https://javarouters.talentadigitalkudus.id/docs/panduan/retry/): Membuat integrasi yang tahan terhadap gangguan sementara.
+
+## SDK dan bahasa
+
+- [Python](https://javarouters.talentadigitalkudus.id/docs/sdk/python/): Memakai JavaRouters dari Python dengan SDK OpenAI, SDK Anthropic, atau LangChain.
+- [JavaScript / TypeScript](https://javarouters.talentadigitalkudus.id/docs/sdk/javascript/): Memakai JavaRouters dari Node.js, Bun, Deno, atau backend Next.js.
+- [Go](https://javarouters.talentadigitalkudus.id/docs/sdk/go/): Memakai JavaRouters dari Go dengan library standar net/http.
+- [PHP](https://javarouters.talentadigitalkudus.id/docs/sdk/php/): Memakai JavaRouters dari PHP dan Laravel.
+- [Java](https://javarouters.talentadigitalkudus.id/docs/sdk/java/): Memakai JavaRouters dari Java dengan HttpClient bawaan JDK atau SDK OpenAI untuk Java.
+- [C# / .NET](https://javarouters.talentadigitalkudus.id/docs/sdk/csharp/): Memakai JavaRouters dari .NET dengan SDK OpenAI resmi atau HttpClient.
+- [HTTP (bahasa lain)](https://javarouters.talentadigitalkudus.id/docs/sdk/http/): Memanggil JavaRouters dari bahasa apa pun lewat HTTP biasa.
+
+## Integrasi
+
+- [MCP dokumentasi untuk AI](https://javarouters.talentadigitalkudus.id/docs/integrasi/mcp/): Sambungkan dokumentasi JavaRouters ke Claude Code, Cursor, VS Code, dan asisten AI lain lewat MCP.
+
+## Akun
+
+- [Saldo dan harga](https://javarouters.talentadigitalkudus.id/docs/akun/saldo-dan-harga/): Cara saldo terpotong, cara membaca harga, dan cara mengecek pemakaian.
+
+## Bantuan
+
+- [FAQ](https://javarouters.talentadigitalkudus.id/docs/bantuan/faq/): Pertanyaan yang sering diajukan.
+- [Tentang dan lisensi](https://javarouters.talentadigitalkudus.id/docs/bantuan/tentang/): Dasar perangkat lunak JavaRouters dan lisensinya.
+
+## Optional
+
+- [Seluruh dokumentasi dalam satu file](https://javarouters.talentadigitalkudus.id/docs/llms-full.txt)

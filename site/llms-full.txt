@@ -1,0 +1,2186 @@
+# Dokumentasi JavaRouters
+
+> JavaRouters adalah gateway API AI: satu API key untuk banyak model AI (Claude, GPT, Gemini, DeepSeek, dan lainnya) lewat endpoint yang kompatibel dengan OpenAI (`/v1/chat/completions`) dan Anthropic (`/v1/messages`). Base URL OpenAI: https://javarouters.talentadigitalkudus.id/v1. Base URL Anthropic: https://javarouters.talentadigitalkudus.id. Dokumentasi berbahasa Indonesia.
+
+---
+
+# Pengenalan
+
+URL: https://javarouters.talentadigitalkudus.id/docs/mulai/pengenalan/
+
+JavaRouters adalah **gateway API AI**: satu akun dan satu API key untuk mengakses banyak model AI, antara lain Claude, GPT, Gemini, Grok, DeepSeek, Kimi, Qwen, GLM dan MiniMax.
+
+## Cara kerjanya
+
+1. Kamu mendaftar dan mengisi saldo.
+2. Kamu membuat API key di konsol.
+3. Aplikasimu mengirim request ke JavaRouters, bukan ke penyedia aslinya. JavaRouters meneruskannya ke model yang kamu pilih.
+4. Biaya setiap request dipotong dari saldo sesuai pemakaian token.
+
+## Kenapa memakai JavaRouters
+
+- **Satu key untuk banyak model.** Tidak perlu akun dan tagihan terpisah di tiap penyedia.
+- **Kompatibel dengan OpenAI dan Anthropic.** SDK dan alat yang sudah ada (OpenAI SDK, Anthropic SDK, Claude Code, Cline, dan lain-lain) cukup diganti base URL dan API key-nya.
+- **Harga di bawah harga resmi.** Harga input dan output sekitar 70% dari harga resmi penyedia, dan diperbarui otomatis setiap jam. Lihat [Saldo dan harga](https://javarouters.talentadigitalkudus.id/docs/akun/saldo-dan-harga/).
+- **Setiap request tercatat.** Model, jumlah token, dan biaya setiap request bisa dilihat di menu **Usage Logs** di konsol.
+
+## Yang perlu diketahui
+
+- Daftar model bisa berubah karena mengikuti ketersediaan dari penyedia. Daftar terbaru selalu ada di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) atau lewat [endpoint daftar model](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/).
+- Saat ini yang tersedia adalah **model teks** (chat). Model gambar dan video belum dijual.
+
+Lanjut ke [Mulai cepat](https://javarouters.talentadigitalkudus.id/docs/mulai/mulai-cepat/) untuk mengirim request pertama.
+
+---
+
+# Mulai cepat
+
+URL: https://javarouters.talentadigitalkudus.id/docs/mulai/mulai-cepat/
+
+1. **Daftar akun**
+
+   Buka [javarouters.talentadigitalkudus.id](https://javarouters.talentadigitalkudus.id), lalu daftar dan masuk.
+
+2. **Isi saldo**
+
+   Buka menu **Dompet** di konsol (`/wallet`). Metode pengisian yang tersedia ditampilkan di halaman itu.
+
+3. **Buat API key**
+
+   Buka menu **API Keys** (`/keys`), buat key baru, lalu salin. Simpan key di tempat aman dan jangan ditaruh di kode yang dibagikan.
+
+4. **Pilih model**
+
+   Lihat nama model di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). Pakai nama persis seperti yang tertulis di sana, misalnya `claude-sonnet-4.6`.
+
+5. **Kirim request pertama**
+
+   Simpan key di environment variable, lalu jalankan salah satu contoh di bawah.
+
+   ```bash
+   export JAVAROUTERS_API_KEY="sk-..."
+   ```
+
+**curl**
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/chat/completions \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "claude-sonnet-4.6", "messages": [{"role": "user", "content": "Halo"}]}'
+```
+
+**Python**
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+response = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    messages=[{"role": "user", "content": "Halo"}],
+)
+print(response.choices[0].message.content)
+```
+
+**Node.js**
+
+```js
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const response = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  messages: [{ role: "user", content: "Halo" }],
+});
+console.log(response.choices[0].message.content);
+```
+
+Kalau mendapat error, lihat [Kode error](https://javarouters.talentadigitalkudus.id/docs/api/kode-error/).
+
+## Langkah berikutnya
+
+- [Ringkasan API](https://javarouters.talentadigitalkudus.id/docs/api/ringkasan/)
+- Memakai alat coding: [Claude Code](https://javarouters.talentadigitalkudus.id/docs/integrasi/claude-code/), [Codex](https://javarouters.talentadigitalkudus.id/docs/integrasi/codex/), [OpenCode](https://javarouters.talentadigitalkudus.id/docs/integrasi/opencode/), [Cline, Cursor, Aider dan lainnya](https://javarouters.talentadigitalkudus.id/docs/integrasi/alat-lain/)
+- [Cek pemakaian dan saldo](https://javarouters.talentadigitalkudus.id/docs/akun/saldo-dan-harga/)
+
+---
+
+# Claude Code
+
+URL: https://javarouters.talentadigitalkudus.id/docs/integrasi/claude-code/
+
+[Claude Code](https://code.claude.com/docs) bisa memakai JavaRouters sebagai pengganti akun Anthropic. Kamu cukup mengganti alamat API dan key, lalu memberi tahu Claude Code nama model yang dipakai di JavaRouters.
+
+Yang kamu butuhkan:
+
+- API key dari menu **API Keys** di konsol, dengan saldo yang cukup.
+- Claude Code versi terbaru (`claude update`).
+
+## Pasang
+
+1. **Buka file pengaturan Claude Code**
+
+   File ini berlaku untuk semua proyek. Buat filenya kalau belum ada.
+
+   - macOS dan Linux: `~/.claude/settings.json`
+   - Windows: `%USERPROFILE%\.claude\settings.json`
+
+2. **Isi alamat, key, dan nama model**
+
+   ```json
+   {
+     "env": {
+       "ANTHROPIC_BASE_URL": "https://javarouters.talentadigitalkudus.id",
+       "ANTHROPIC_AUTH_TOKEN": "sk-...",
+       "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5.5",
+       "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5.5",
+       "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-5.5",
+       "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-fable-5.1"
+     }
+   }
+   ```
+
+   Kalau file sudah berisi pengaturan lain, tambahkan baris-baris di atas ke dalam blok `"env"` yang sudah ada.
+
+3. **Jalankan Claude Code**
+
+   ```bash
+   claude
+   ```
+
+   Kalau sebelumnya kamu login dengan akun Claude dan muncul peringatan tentang dua sumber login, jalankan `/logout`. Setelah itu yang dipakai hanya API key JavaRouters.
+
+4. **Cek koneksi**
+
+   Ketik `/status`. Baris **Anthropic base URL** harus menunjukkan `https://javarouters.talentadigitalkudus.id`, dan baris **Auth token** menyebut `ANTHROPIC_AUTH_TOKEN`. Lalu kirim satu pesan; kalau dijawab, koneksi sudah benar.
+
+## Kenapa nama model perlu diisi
+
+Claude Code memakai nama model versi Anthropic, misalnya `claude-sonnet-5-5` (pakai tanda hubung). Di JavaRouters namanya `claude-sonnet-5.5` (pakai titik). Tanpa pemetaan, request ditolak karena nama modelnya tidak dikenal.
+
+Empat variabel `ANTHROPIC_DEFAULT_..._MODEL` di atas memetakan pilihan `opus`, `sonnet`, `haiku` dan `fable` di Claude Code ke nama JavaRouters:
+
+| Di Claude Code | Variabel | Contoh nilai |
+|---|---|---|
+| `/model opus` | `ANTHROPIC_DEFAULT_OPUS_MODEL` | `claude-opus-5.5` |
+| `/model sonnet` | `ANTHROPIC_DEFAULT_SONNET_MODEL` | `claude-sonnet-5.5` |
+| `/model haiku` | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `claude-haiku-5.5` |
+| `/model fable` | `ANTHROPIC_DEFAULT_FABLE_MODEL` | `claude-fable-5.1` |
+
+`ANTHROPIC_DEFAULT_HAIKU_MODEL` juga dipakai untuk tugas latar belakang, seperti membuat judul sesi, jadi isi juga yang ini.
+
+Kamu bebas mengganti nilainya dengan model Claude lain dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing), misalnya model yang lebih murah untuk `haiku`. Untuk sekali pakai, kamu juga bisa mengetik nama lengkapnya, misalnya `/model claude-opus-4.8`.
+
+**Catatan:**
+Claude Code memakai format Anthropic, jadi pilih model **Claude**. Model lain seperti GPT atau DeepSeek lebih cocok dipakai lewat [Codex](https://javarouters.talentadigitalkudus.id/docs/integrasi/codex/) atau [OpenCode](https://javarouters.talentadigitalkudus.id/docs/integrasi/opencode/).
+
+## Hanya untuk satu terminal
+
+Kalau tidak mau mengubah file pengaturan, set variabelnya di terminal. Pengaturan ini hilang saat terminal ditutup.
+
+**macOS / Linux**
+
+```bash
+export ANTHROPIC_BASE_URL=https://javarouters.talentadigitalkudus.id
+export ANTHROPIC_AUTH_TOKEN=$JAVAROUTERS_API_KEY
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5.5
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-5.5
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-5.5
+export ANTHROPIC_DEFAULT_FABLE_MODEL=claude-fable-5.1
+claude
+```
+
+**Windows (PowerShell)**
+
+```powershell
+$env:ANTHROPIC_BASE_URL = "https://javarouters.talentadigitalkudus.id"
+$env:ANTHROPIC_AUTH_TOKEN = $env:JAVAROUTERS_API_KEY
+$env:ANTHROPIC_DEFAULT_OPUS_MODEL = "claude-opus-5.5"
+$env:ANTHROPIC_DEFAULT_SONNET_MODEL = "claude-sonnet-5.5"
+$env:ANTHROPIC_DEFAULT_HAIKU_MODEL = "claude-haiku-5.5"
+$env:ANTHROPIC_DEFAULT_FABLE_MODEL = "claude-fable-5.1"
+claude
+```
+
+## Ekstensi VS Code
+
+Ekstensi Claude Code untuk VS Code memeriksa login sebelum berjalan, jadi isi variabelnya di pengaturan VS Code. Buka Command Palette, pilih **Preferences: Open User Settings (JSON)**, lalu tambahkan:
+
+```json
+{
+  "claudeCode.environmentVariables": [
+    { "name": "ANTHROPIC_BASE_URL", "value": "https://javarouters.talentadigitalkudus.id" },
+    { "name": "ANTHROPIC_AUTH_TOKEN", "value": "sk-..." },
+    { "name": "ANTHROPIC_DEFAULT_OPUS_MODEL", "value": "claude-opus-5.5" },
+    { "name": "ANTHROPIC_DEFAULT_SONNET_MODEL", "value": "claude-sonnet-5.5" },
+    { "name": "ANTHROPIC_DEFAULT_HAIKU_MODEL", "value": "claude-haiku-5.5" },
+    { "name": "ANTHROPIC_DEFAULT_FABLE_MODEL", "value": "claude-fable-5.1" }
+  ]
+}
+```
+
+## Kalau ada masalah
+
+| Gejala | Penyebab dan solusi |
+|---|---|
+| Error `401` | Key salah atau sudah dihapus. Salin ulang key dari menu **API Keys**. |
+| `There's an issue with the selected model` atau error `model_not_found` | Nama model tidak ada di JavaRouters. Cek tabel pemetaan di atas dan nama di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| Error `403` dengan `insufficient_user_quota` | Saldo habis. Isi saldo di menu **Dompet**. |
+| `Failed to authenticate. API Error: 403 token quota is not enough` | Bukan masalah login: batas saldo pada API key ini lebih kecil dari perkiraan biaya request. Model besar seperti Opus dan Fable butuh ruang lebih. Naikkan batas key di menu **API Keys**, atau pakai key tanpa batas. |
+| Error `400` yang menyebut `thinking` atau `adaptive` | Model itu tidak menerima mode berpikir yang diminta Claude Code. Untuk model 4.6, set `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` di blok `env`, atau pilih model lain. |
+| Claude Code tetap meminta login | Key belum terbaca. Pastikan `ANTHROPIC_AUTH_TOKEN` ada di `~/.claude/settings.json` (bukan di `.claude/settings.json` milik proyek), lalu buka ulang Claude Code. |
+
+Biaya setiap request bisa dicek di menu **Usage Logs** di konsol.
+
+**Perhatian:**
+Jangan taruh key di `.claude/settings.json` di dalam folder proyek. File itu biasanya ikut ter-commit ke Git dan terbaca orang lain.
+
+---
+
+# Codex
+
+URL: https://javarouters.talentadigitalkudus.id/docs/integrasi/codex/
+
+[Codex](https://learn.chatgpt.com/docs) bisa memakai JavaRouters sebagai *model provider*. Pengaturannya ada di file `config.toml` milik Codex.
+
+Yang kamu butuhkan:
+
+- API key dari menu **API Keys** di konsol, dengan saldo yang cukup.
+- Codex CLI versi terbaru.
+
+**Catatan:**
+Codex memakai format OpenAI Responses (`/v1/responses`). Di JavaRouters, pakai model **GPT**, misalnya `gpt-5.3-codex` atau `gpt-6-sol`. Untuk model Claude, pakai [Claude Code](https://javarouters.talentadigitalkudus.id/docs/integrasi/claude-code/); untuk model lain, pakai [OpenCode](https://javarouters.talentadigitalkudus.id/docs/integrasi/opencode/).
+
+## Pasang
+
+1. **Simpan API key di environment variable**
+
+**macOS / Linux**
+
+   Tambahkan baris ini ke `~/.zshrc` atau `~/.bashrc`, lalu buka terminal baru:
+
+   ```bash
+   export JAVAROUTERS_API_KEY="sk-..."
+   ```
+
+**Windows**
+
+   Jalankan sekali di PowerShell atau Command Prompt, lalu buka terminal baru:
+
+   ```powershell
+   setx JAVAROUTERS_API_KEY "sk-..."
+   ```
+
+2. **Buka file konfigurasi Codex**
+
+   - macOS dan Linux: `~/.codex/config.toml`
+   - Windows: `%USERPROFILE%\.codex\config.toml`
+
+   Buat filenya kalau belum ada.
+
+3. **Tambahkan JavaRouters sebagai provider**
+
+   ```toml
+   model = "gpt-5.3-codex"
+   model_provider = "javarouters"
+
+   [model_providers.javarouters]
+   name = "JavaRouters"
+   base_url = "https://javarouters.talentadigitalkudus.id/v1"
+   env_key = "JAVAROUTERS_API_KEY"
+   wire_api = "responses"
+   ```
+
+   `model` dan `model_provider` harus berada di bagian atas file, sebelum baris `[model_providers.javarouters]`. Kalau file sudah berisi `model` atau `model_provider`, ganti nilainya, jangan ditulis dua kali.
+
+4. **Jalankan Codex**
+
+   ```bash
+   codex
+   ```
+
+   Untuk memakai model lain sekali jalan: `codex -m gpt-6-sol`.
+
+   Codex bisa menampilkan peringatan `Model metadata for ... not found`. Peringatan itu muncul untuk nama model yang tidak dikenal Codex dan boleh diabaikan selama model menjawab.
+
+## Catatan
+
+- `base_url` **memakai** `/v1` di akhir.
+- Pengaturan provider harus di `config.toml` milik pengguna (folder `.codex` di folder home). File `.codex/config.toml` di dalam folder proyek tidak boleh mengatur `model_provider`.
+- Nama model harus persis seperti di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing).
+- Biaya setiap request bisa dicek di menu **Usage Logs** di konsol.
+
+## Kalau ada masalah
+
+| Gejala | Penyebab dan solusi |
+|---|---|
+| Error `401` | `JAVAROUTERS_API_KEY` kosong atau salah. Di Windows, buka terminal baru setelah `setx`. Cek dengan `echo $JAVAROUTERS_API_KEY` (macOS/Linux) atau `echo %JAVAROUTERS_API_KEY%` (Command Prompt). |
+| Error `model_not_found` atau `503` | Nama model tidak ada, atau model itu tidak mendukung format Responses. Pakai model GPT dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| `upstream request failed; please retry` | Model itu sedang tidak tersedia. Coba lagi nanti, atau pakai model GPT lain. |
+| Error `403` dengan `insufficient_user_quota` | Saldo habis. Isi saldo di menu **Dompet**. |
+
+---
+
+# OpenCode
+
+URL: https://javarouters.talentadigitalkudus.id/docs/integrasi/opencode/
+
+[OpenCode](https://opencode.ai/docs) bisa memakai JavaRouters sebagai *custom provider*. Semua model JavaRouters mendukung format OpenAI, jadi Claude, GPT, DeepSeek, Kimi, Qwen dan model lain bisa dipakai dari satu provider.
+
+Yang kamu butuhkan:
+
+- API key dari menu **API Keys** di konsol, dengan saldo yang cukup.
+- OpenCode versi terbaru.
+
+## Pasang
+
+1. **Simpan API key di environment variable**
+
+**macOS / Linux**
+
+   Tambahkan baris ini ke `~/.zshrc` atau `~/.bashrc`, lalu buka terminal baru:
+
+   ```bash
+   export JAVAROUTERS_API_KEY="sk-..."
+   ```
+
+**Windows**
+
+   Jalankan sekali di PowerShell atau Command Prompt, lalu buka terminal baru:
+
+   ```powershell
+   setx JAVAROUTERS_API_KEY "sk-..."
+   ```
+
+2. **Buat file konfigurasi OpenCode**
+
+   Pilih salah satu:
+
+   - Untuk semua proyek, macOS dan Linux: `~/.config/opencode/opencode.json`
+   - Untuk semua proyek, Windows: `C:\Users\<nama>\.config\opencode\opencode.json`
+   - Untuk satu proyek: `opencode.json` di folder utama proyek
+
+   Kalau file sudah ada, tambahkan bagian `javarouters` ke dalam `"provider"` yang sudah ada.
+
+3. **Tambahkan JavaRouters sebagai provider**
+
+   ```json
+   {
+     "$schema": "https://opencode.ai/config.json",
+     "model": "javarouters/claude-sonnet-5.5",
+     "provider": {
+       "javarouters": {
+         "npm": "@ai-sdk/openai-compatible",
+         "name": "JavaRouters",
+         "options": {
+           "baseURL": "https://javarouters.talentadigitalkudus.id/v1",
+           "apiKey": "{env:JAVAROUTERS_API_KEY}"
+         },
+         "models": {
+           "claude-sonnet-5.5": { "name": "Claude Sonnet 5.5" },
+           "gpt-5.3-codex": { "name": "GPT-5.3 Codex" },
+           "deepseek-v4-pro": { "name": "DeepSeek V4 Pro" }
+         }
+       }
+     }
+   }
+   ```
+
+   Model yang muncul di OpenCode hanya yang ditulis di bagian `models`. Tambahkan nama lain dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing), persis seperti tertulis di sana.
+
+4. **Jalankan OpenCode**
+
+   ```bash
+   opencode
+   ```
+
+   Ganti model kapan saja dengan perintah `/models`. Model JavaRouters tampil di bawah nama **JavaRouters**.
+
+## Format konfigurasi OpenCode versi baru
+
+Dokumentasi OpenCode terbaru memakai format lain: `providers` (jamak), `package` dan `settings`. Kalau model JavaRouters tidak muncul di `/models` dengan format di atas, pakai format ini:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "javarouters/claude-sonnet-5.5",
+  "providers": {
+    "javarouters": {
+      "name": "JavaRouters",
+      "env": ["JAVAROUTERS_API_KEY"],
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://javarouters.talentadigitalkudus.id/v1"
+      },
+      "models": {
+        "claude-sonnet-5.5": { "name": "Claude Sonnet 5.5" },
+        "gpt-5.3-codex": { "name": "GPT-5.3 Codex" },
+        "deepseek-v4-pro": { "name": "DeepSeek V4 Pro" }
+      }
+    }
+  }
+}
+```
+
+## Catatan
+
+- `baseURL` **memakai** `/v1` di akhir.
+- Di bagian `"model"`, nama model ditulis dengan awalan provider: `javarouters/<nama-model>`.
+- Biaya setiap request bisa dicek di menu **Usage Logs** di konsol.
+
+## Kalau ada masalah
+
+| Gejala | Penyebab dan solusi |
+|---|---|
+| Error `401` | `JAVAROUTERS_API_KEY` kosong atau salah. Di Windows, buka terminal baru setelah `setx`. |
+| Model tidak muncul di `/models` | Nama model belum ditambahkan di bagian `models`, atau file konfigurasi tidak terbaca. Cek lokasi file dan pastikan isinya JSON yang valid. |
+| Error `model_not_found` atau `503` | Nama model salah ketik. Salin dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). |
+| Error `403` dengan `insufficient_user_quota` | Saldo habis. Isi saldo di menu **Dompet**. |
+
+---
+
+# Alat dan aplikasi lain
+
+URL: https://javarouters.talentadigitalkudus.id/docs/integrasi/alat-lain/
+
+Hampir semua aplikasi yang mendukung "OpenAI-compatible" atau "Anthropic-compatible" bisa memakai JavaRouters. Cari pengaturan provider khusus (custom provider), lalu isi:
+
+| Isian | Nilai |
+|---|---|
+| Base URL (OpenAI-compatible) | `https://javarouters.talentadigitalkudus.id/v1` |
+| Base URL (Anthropic) | `https://javarouters.talentadigitalkudus.id` |
+| API key | Key dari menu **API Keys** |
+| Model | Nama dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) |
+
+Semua model bisa dipakai lewat format OpenAI. Format Anthropic hanya untuk model Claude.
+
+Untuk Claude Code, Codex dan OpenCode ada panduan tersendiri: [Claude Code](https://javarouters.talentadigitalkudus.id/docs/integrasi/claude-code/), [Codex](https://javarouters.talentadigitalkudus.id/docs/integrasi/codex/), [OpenCode](https://javarouters.talentadigitalkudus.id/docs/integrasi/opencode/).
+
+Nama menu di tiap aplikasi bisa berbeda antarversi. Panduan di bawah menyebut letak yang umum.
+
+## Cline, Roo Code dan Kilo Code (VS Code)
+
+Ketiga ekstensi ini pengaturannya mirip.
+
+1. Buka panel ekstensi, lalu buka pengaturannya (ikon roda gigi).
+2. Pilih **API Provider: OpenAI Compatible**.
+3. Isi **Base URL** dengan `https://javarouters.talentadigitalkudus.id/v1`.
+4. Isi **API Key** dengan key JavaRouters dan **Model ID** dengan nama model, misalnya `claude-sonnet-5.5`.
+
+## Cursor
+
+1. Buka **Settings → Models**.
+2. Isi **OpenAI API Key** dengan key JavaRouters, lalu aktifkan **Override OpenAI Base URL** dengan `https://javarouters.talentadigitalkudus.id/v1`.
+3. Tambahkan nama model dari daftar JavaRouters.
+
+## Aider
+
+Aider membaca alamat dan key dari environment variable. Nama model diberi awalan `openai/`.
+
+macOS dan Linux:
+
+```bash
+export OPENAI_API_BASE=https://javarouters.talentadigitalkudus.id/v1
+export OPENAI_API_KEY=$JAVAROUTERS_API_KEY
+aider --model openai/claude-sonnet-5.5
+```
+
+Windows (jalankan sekali, lalu buka terminal baru):
+
+```powershell
+setx OPENAI_API_BASE https://javarouters.talentadigitalkudus.id/v1
+setx OPENAI_API_KEY sk-...
+aider --model openai/claude-sonnet-5.5
+```
+
+Aider bisa menampilkan peringatan untuk nama model yang tidak dikenalnya. Peringatan itu boleh diabaikan selama model menjawab.
+
+## Cherry Studio
+
+1. Buka **Settings → Model Provider**, lalu tambah provider bertipe **OpenAI**.
+2. Isi **API Host** dengan `https://javarouters.talentadigitalkudus.id` dan isi **API Key**.
+3. Tambahkan model dengan nama dari daftar JavaRouters.
+
+## Aplikasi lain
+
+Kalau aplikasi hanya meminta "OpenAI API key" tanpa pilihan base URL, aplikasi itu belum bisa dipakai dengan JavaRouters.
+
+---
+
+# Ringkasan API
+
+URL: https://javarouters.talentadigitalkudus.id/docs/api/ringkasan/
+
+JavaRouters memakai format API yang sama dengan **OpenAI** dan **Anthropic**. Library atau kode yang sudah bisa memanggil OpenAI atau Anthropic cukup diganti base URL dan API key-nya.
+
+## Base URL
+
+| Format | Base URL | Dipakai oleh |
+|---|---|---|
+| OpenAI | `https://javarouters.talentadigitalkudus.id/v1` | SDK OpenAI, LangChain, Cline, Cursor, HTTP langsung |
+| Anthropic | `https://javarouters.talentadigitalkudus.id` | SDK Anthropic, Claude Code |
+
+SDK OpenAI memakai base URL **dengan** `/v1`. SDK Anthropic memakai base URL **tanpa** `/v1`, karena SDK-nya menambahkan `/v1/messages` sendiri.
+
+## Endpoint
+
+| Method | Path | Fungsi |
+|---|---|---|
+| `POST` | `/v1/chat/completions` | Percakapan format OpenAI. Bisa untuk semua model. [Detail](https://javarouters.talentadigitalkudus.id/docs/api/chat-completions/) |
+| `POST` | `/v1/messages` | Percakapan format Anthropic. [Detail](https://javarouters.talentadigitalkudus.id/docs/api/messages-anthropic/) |
+| `GET` | `/v1/models` | Daftar model yang bisa dipakai key kamu. [Detail](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/) |
+| `GET` | `/v1/dashboard/billing/subscription` | Batas saldo key. [Detail](https://javarouters.talentadigitalkudus.id/docs/api/saldo-key/) |
+| `GET` | `/v1/dashboard/billing/usage` | Total pemakaian key. [Detail](https://javarouters.talentadigitalkudus.id/docs/api/saldo-key/) |
+
+Saat ini JavaRouters menjual **model teks**. Endpoint gambar, audio, embedding, dan video belum dibuka untuk dijual.
+
+## Autentikasi
+
+Buat API key di menu **API Keys** (`/keys`) di konsol. Key berbentuk `sk-...`.
+
+**Format OpenAI**, lewat header `Authorization`:
+
+```http
+Authorization: Bearer sk-...
+Content-Type: application/json
+```
+
+**Format Anthropic**, lewat header `x-api-key` (header `Authorization: Bearer` juga diterima):
+
+```http
+x-api-key: sk-...
+anthropic-version: 2023-06-01
+Content-Type: application/json
+```
+
+## Format respons dan error
+
+- Respons sukses mengikuti format OpenAI atau Anthropic, sesuai endpoint yang dipanggil.
+- Error memakai format OpenAI dengan kode status HTTP yang sesuai:
+
+```json
+{
+  "error": {
+    "message": "penjelasan error",
+    "type": "...",
+    "code": "..."
+  }
+}
+```
+
+Daftar lengkapnya ada di [Kode error](https://javarouters.talentadigitalkudus.id/docs/api/kode-error/).
+
+## Nama model
+
+Pakai nama model **persis** seperti di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) atau dari [`GET /v1/models`](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/), misalnya `claude-sonnet-4.6`. Nama bisa berbeda dari ID resmi penyedia.
+
+## Keamanan API key
+
+- Simpan key di environment variable atau secret manager, bukan di kode. Contoh di dokumentasi ini membaca key dari `JAVAROUTERS_API_KEY`.
+- Jangan pakai key di frontend (browser atau aplikasi mobile), karena key bisa dibaca pengguna. Panggil JavaRouters dari backend kamu.
+- Buat key terpisah per aplikasi, dan batasi kuota atau modelnya bila perlu. Key yang bocor bisa dihapus di menu **API Keys**.
+
+---
+
+# Chat Completions
+
+URL: https://javarouters.talentadigitalkudus.id/docs/api/chat-completions/
+
+```http
+POST https://javarouters.talentadigitalkudus.id/v1/chat/completions
+```
+
+Endpoint utama JavaRouters, mengikuti format [Chat Completions OpenAI](https://platform.openai.com/docs/api-reference/chat). Endpoint ini bisa dipakai untuk **semua model yang dijual**, termasuk Claude, Gemini, dan DeepSeek, bukan hanya GPT.
+
+## Header
+
+| Header | Nilai |
+|---|---|
+| `Authorization` | `Bearer sk-...` |
+| `Content-Type` | `application/json` |
+
+## Body request
+
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `model` | string | Ya | Nama model dari [daftar model](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/), misalnya `claude-sonnet-4.6`. |
+| `messages` | array | Ya | Riwayat percakapan. Lihat [Format messages](#format-messages). |
+| `stream` | boolean | Tidak | `true` untuk menerima jawaban bertahap. Lihat [Streaming](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/). |
+| `stream_options` | object | Tidak | `{"include_usage": true}` meminta jumlah token di chunk terakhir saat streaming. |
+| `max_tokens` | integer | Tidak | Batas jumlah token jawaban. |
+| `temperature` | number | Tidak | Variasi jawaban. Nilai kecil membuat jawaban lebih konsisten. |
+| `top_p` | number | Tidak | Alternatif `temperature` (nucleus sampling). |
+| `stop` | string / array | Tidak | Teks yang menghentikan jawaban. |
+| `tools` | array | Tidak | Daftar fungsi yang boleh dipanggil model. Lihat [Tool calling](https://javarouters.talentadigitalkudus.id/docs/panduan/tool-calling/). |
+| `tool_choice` | string / object | Tidak | `auto`, `none`, `required`, atau fungsi tertentu. |
+| `response_format` | object | Tidak | Misalnya `{"type": "json_object"}` untuk meminta jawaban JSON. |
+| `user` | string | Tidak | ID pengguna akhir di aplikasimu, untuk pelacakan. |
+
+Parameter lain dari format OpenAI diteruskan ke model. **Dukungan setiap parameter tergantung model**; parameter yang tidak didukung bisa diabaikan atau menghasilkan error `400`.
+
+### Format messages
+
+```json
+[
+  { "role": "system", "content": "Kamu asisten yang menjawab dalam bahasa Indonesia." },
+  { "role": "user", "content": "Apa itu API gateway?" },
+  { "role": "assistant", "content": "API gateway adalah ..." },
+  { "role": "user", "content": "Beri contoh pemakaiannya." }
+]
+```
+
+| Role | Fungsi |
+|---|---|
+| `system` | Instruksi umum untuk model. |
+| `user` | Pesan dari pengguna. |
+| `assistant` | Jawaban model sebelumnya (untuk menyimpan konteks percakapan). |
+| `tool` | Hasil pemanggilan fungsi. Lihat [Tool calling](https://javarouters.talentadigitalkudus.id/docs/panduan/tool-calling/). |
+
+## Contoh request
+
+**curl**
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/chat/completions \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4.6",
+    "max_tokens": 512,
+    "messages": [
+      {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+      {"role": "user", "content": "Apa itu API gateway?"}
+    ]
+  }'
+```
+
+**Python**
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+response = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    max_tokens=512,
+    messages=[
+        {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+        {"role": "user", "content": "Apa itu API gateway?"},
+    ],
+)
+print(response.choices[0].message.content)
+print(response.usage)
+```
+
+**JavaScript**
+
+```js
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const response = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  max_tokens: 512,
+  messages: [
+    { role: "system", content: "Jawab dalam bahasa Indonesia." },
+    { role: "user", content: "Apa itu API gateway?" },
+  ],
+});
+console.log(response.choices[0].message.content);
+console.log(response.usage);
+```
+
+Contoh untuk Go, PHP, Java, C#, dan bahasa lain ada di bagian [SDK dan bahasa](https://javarouters.talentadigitalkudus.id/docs/sdk/python/).
+
+## Respons
+
+```json
+{
+  "id": "chatcmpl-...",
+  "object": "chat.completion",
+  "created": 1762560000,
+  "model": "claude-sonnet-4.6",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "API gateway adalah ..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 24,
+    "completion_tokens": 180,
+    "total_tokens": 204
+  }
+}
+```
+
+| Field | Keterangan |
+|---|---|
+| `choices[0].message.content` | Teks jawaban. |
+| `choices[0].message.tool_calls` | Ada jika model memanggil fungsi. |
+| `choices[0].finish_reason` | `stop` (selesai), `length` (terpotong `max_tokens`), atau `tool_calls`. |
+| `usage` | Jumlah token. Biaya request dihitung dari angka ini. |
+
+Angka di contoh di atas hanya ilustrasi.
+
+## Streaming
+
+Dengan `"stream": true`, jawaban dikirim bertahap sebagai Server-Sent Events. Format chunk dan contoh membacanya ada di [Streaming](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/).
+
+---
+
+# Messages (format Anthropic)
+
+URL: https://javarouters.talentadigitalkudus.id/docs/api/messages-anthropic/
+
+```http
+POST https://javarouters.talentadigitalkudus.id/v1/messages
+```
+
+Endpoint ini mengikuti format [Messages API Anthropic](https://docs.anthropic.com/en/api/messages), sehingga SDK Anthropic dan alat seperti Claude Code bisa dipakai langsung. Pastikan model yang dipilih mendukung format Anthropic; ini ditandai di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing).
+
+**Catatan:**
+Base URL untuk SDK Anthropic adalah `https://javarouters.talentadigitalkudus.id`, **tanpa** `/v1`.
+
+## Header
+
+| Header | Nilai |
+|---|---|
+| `x-api-key` | `sk-...` (atau `Authorization: Bearer sk-...`) |
+| `anthropic-version` | `2023-06-01` |
+| `Content-Type` | `application/json` |
+
+## Body request
+
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `model` | string | Ya | Nama model dari [daftar model](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/). |
+| `max_tokens` | integer | Ya | Batas jumlah token jawaban. |
+| `messages` | array | Ya | Percakapan bergantian `user` dan `assistant`. |
+| `system` | string / array | Tidak | Instruksi umum. Berbeda dari format OpenAI, ini bukan bagian dari `messages`. |
+| `stream` | boolean | Tidak | `true` untuk menerima jawaban bertahap. |
+| `temperature` | number | Tidak | Variasi jawaban. |
+| `top_p`, `top_k` | number | Tidak | Pengaturan sampling. |
+| `stop_sequences` | array | Tidak | Teks yang menghentikan jawaban. |
+| `tools` | array | Tidak | Fungsi yang boleh dipanggil model (format Anthropic). |
+| `tool_choice` | object | Tidak | Mengatur pemakaian tools. |
+
+## Contoh request
+
+**curl**
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/messages \
+  -H "x-api-key: $JAVAROUTERS_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet-4.6",
+    "max_tokens": 1024,
+    "system": "Jawab dalam bahasa Indonesia.",
+    "messages": [{"role": "user", "content": "Apa itu API gateway?"}]
+  }'
+```
+
+**Python**
+
+```python
+import os
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="https://javarouters.talentadigitalkudus.id",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+message = client.messages.create(
+    model="claude-sonnet-4.6",
+    max_tokens=1024,
+    system="Jawab dalam bahasa Indonesia.",
+    messages=[{"role": "user", "content": "Apa itu API gateway?"}],
+)
+print(message.content[0].text)
+```
+
+**JavaScript**
+
+```js
+
+const client = new Anthropic({
+  baseURL: "https://javarouters.talentadigitalkudus.id",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const message = await client.messages.create({
+  model: "claude-sonnet-4.6",
+  max_tokens: 1024,
+  system: "Jawab dalam bahasa Indonesia.",
+  messages: [{ role: "user", content: "Apa itu API gateway?" }],
+});
+console.log(message.content[0].text);
+```
+
+## Respons
+
+```json
+{
+  "id": "msg_...",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-4.6",
+  "content": [{ "type": "text", "text": "API gateway adalah ..." }],
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 24, "output_tokens": 180 }
+}
+```
+
+| Field | Keterangan |
+|---|---|
+| `content` | Daftar blok jawaban. Teks ada di blok bertipe `text`; pemanggilan fungsi di blok `tool_use`. |
+| `stop_reason` | `end_turn` (selesai), `max_tokens` (terpotong), `stop_sequence`, atau `tool_use`. |
+| `usage` | Jumlah token input dan output. |
+
+## Streaming
+
+Dengan `"stream": true`, server mengirim event berurutan: `message_start`, `content_block_start`, beberapa `content_block_delta` (teks ada di `delta.text`), `content_block_stop`, `message_delta`, lalu `message_stop`. SDK Anthropic sudah menangani urutan ini:
+
+```python
+with client.messages.stream(
+    model="claude-sonnet-4.6",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Ceritakan sejarah Kudus singkat."}],
+) as stream:
+    for text in stream.text_stream:
+        print(text, end="", flush=True)
+```
+
+---
+
+# Daftar model
+
+URL: https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/
+
+```http
+GET https://javarouters.talentadigitalkudus.id/v1/models
+```
+
+Daftar model berubah mengikuti ketersediaan dari penyedia dan diperbarui otomatis, jadi dokumentasi ini sengaja **tidak** mencantumkan daftar tetap. Ambil daftarnya dari endpoint ini, atau lihat halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) yang juga menampilkan harga dan format endpoint yang didukung tiap model.
+
+## Request
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/models \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY"
+```
+
+Dengan SDK OpenAI:
+
+```python
+for model in client.models.list():
+    print(model.id)
+```
+
+## Respons
+
+Format OpenAI. Field `data[].id` berisi nama yang dipakai di parameter `model`.
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "id": "claude-sonnet-4.6", "object": "model", "owned_by": "..." },
+    { "id": "deepseek-v4-pro", "object": "model", "owned_by": "..." }
+  ]
+}
+```
+
+Isi contoh di atas hanya ilustrasi. Jika key kamu dibatasi ke model tertentu, daftar yang muncul menyesuaikan.
+
+## Penamaan model
+
+- Pakai nama **persis** seperti di daftar, misalnya `claude-sonnet-4.6`. Nama bisa berbeda dari ID resmi penyedia, jadi jangan mengandalkan nama default dari SDK atau alat yang kamu pakai.
+- Model bisa hilang sementara dari daftar ketika penyedianya tidak tersedia. Simpan nama model di konfigurasi aplikasi (bukan ditulis mati di kode) supaya mudah diganti.
+
+---
+
+# Saldo dan pemakaian key
+
+URL: https://javarouters.talentadigitalkudus.id/docs/api/saldo-key/
+
+Dua endpoint ini kompatibel dengan endpoint billing lama milik OpenAI, sehingga banyak aplikasi pihak ketiga bisa menampilkan saldo secara otomatis. Keduanya memakai API key yang sama dengan request inference.
+
+Nilainya dihitung untuk **API key yang dipakai**, dalam **USD**.
+
+## Batas saldo key
+
+```http
+GET https://javarouters.talentadigitalkudus.id/v1/dashboard/billing/subscription
+```
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/dashboard/billing/subscription \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY"
+```
+
+```json
+{
+  "object": "billing_subscription",
+  "has_payment_method": true,
+  "soft_limit_usd": 10.0,
+  "hard_limit_usd": 10.0,
+  "system_hard_limit_usd": 10.0,
+  "access_until": 0
+}
+```
+
+| Field | Keterangan |
+|---|---|
+| `hard_limit_usd` | Total kuota key (sisa ditambah yang sudah terpakai), dalam USD. Untuk key tanpa batas kuota, nilainya `100000000`. |
+| `access_until` | Waktu kedaluwarsa key (Unix timestamp, detik). `0` berarti tidak kedaluwarsa. |
+
+## Total pemakaian key
+
+```http
+GET https://javarouters.talentadigitalkudus.id/v1/dashboard/billing/usage
+```
+
+```bash
+curl https://javarouters.talentadigitalkudus.id/v1/dashboard/billing/usage \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY"
+```
+
+```json
+{
+  "object": "list",
+  "total_usage": 250.0
+}
+```
+
+`total_usage` adalah total pemakaian key dalam **sen USD** (dibagi 100 untuk mendapat USD). Pada contoh di atas, pemakaiannya 2,50 USD.
+
+## Menghitung sisa saldo
+
+```text
+sisa (USD) = hard_limit_usd - total_usage / 100
+```
+
+Contoh Python:
+
+```python
+import os, requests
+
+BASE = "https://javarouters.talentadigitalkudus.id/v1/dashboard/billing"
+headers = {"Authorization": f"Bearer {os.environ['JAVAROUTERS_API_KEY']}"}
+
+limit = requests.get(f"{BASE}/subscription", headers=headers, timeout=30).json()
+usage = requests.get(f"{BASE}/usage", headers=headers, timeout=30).json()
+print("Sisa:", round(limit["hard_limit_usd"] - usage["total_usage"] / 100, 4), "USD")
+```
+
+Angka di contoh hanya ilustrasi. Riwayat per request (model, token, biaya) ada di menu **Usage Logs** di konsol.
+
+---
+
+# Kode error
+
+URL: https://javarouters.talentadigitalkudus.id/docs/api/kode-error/
+
+Error dikembalikan dalam format OpenAI:
+
+```json
+{
+  "error": {
+    "message": "penjelasan error",
+    "type": "...",
+    "code": "..."
+  }
+}
+```
+
+| Status | Arti | Yang perlu dilakukan |
+|---|---|---|
+| `400` | Request tidak valid | Cek format JSON dan parameter, misalnya `messages` kosong atau parameter tidak didukung model. |
+| `401` | API key tidak valid | Cek key di header `Authorization: Bearer ...` atau `x-api-key`. Pastikan key belum dihapus atau kedaluwarsa. |
+| `403` | Saldo tidak cukup, atau API key tidak diizinkan memakai model itu | Kalau kodenya `insufficient_user_quota`, isi saldo di menu **Dompet**. Kalau pesannya menyebut model, cek batasan model pada API key di menu **API Keys**. |
+| `404` | Endpoint tidak ditemukan | Cek base URL: format OpenAI memakai `/v1`, SDK Anthropic tanpa `/v1`. |
+| `429` | Terlalu banyak request | Tunggu sebentar, lalu kirim ulang dengan jeda (*exponential backoff*). |
+| `503` dengan kode `model_not_found` | Model tidak tersedia | Cek ejaan nama model di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing). Model yang sedang tidak tersedia bisa hilang sementara dari daftar. |
+| `500`, `502`, `503` lainnya | Gangguan di sisi server atau penyedia model | Coba lagi beberapa saat kemudian, atau pakai model lain. |
+
+Isi `message` biasanya menjelaskan penyebab pastinya. Sertakan isi tersebut saat menghubungi dukungan.
+
+## 403 dengan teks `error code: 1010`
+
+Jika respons `403` berisi teks biasa `error code: 1010` (bukan JSON), request ditolak oleh lapisan keamanan jaringan sebelum sampai ke JavaRouters, karena header `User-Agent` dari library HTTP-mu diblokir. Ini terjadi pada `urllib` bawaan Python. Solusinya, pakai library lain (SDK OpenAI, `requests`, atau `httpx`), atau kirim header `User-Agent` sendiri:
+
+```python
+import urllib.request
+
+req = urllib.request.Request(url, data=body, headers={
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json",
+    "User-Agent": "aplikasi-saya/1.0",
+})
+```
+
+## Error mana yang boleh dicoba ulang
+
+| Coba ulang otomatis | Jangan dicoba ulang tanpa perubahan |
+|---|---|
+| `429`, `500`, `502`, `503` (selain `model_not_found`), timeout, koneksi terputus | `400`, `401`, `403`, `404`, `503 model_not_found` |
+
+Error di kolom kanan tidak akan berubah hanya dengan mengirim ulang; perbaiki request, key, saldo, atau nama modelnya dulu. Contoh kode retry ada di [Retry dan penanganan error](https://javarouters.talentadigitalkudus.id/docs/panduan/retry/).
+
+---
+
+# Streaming
+
+URL: https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/
+
+Dengan streaming, jawaban muncul sedikit demi sedikit seperti mengetik, tanpa menunggu jawaban selesai. Ini penting untuk chatbot dan jawaban panjang.
+
+Aktifkan dengan `"stream": true` di [Chat Completions](https://javarouters.talentadigitalkudus.id/docs/api/chat-completions/) atau [Messages](https://javarouters.talentadigitalkudus.id/docs/api/messages-anthropic/).
+
+## Format chunk (format OpenAI)
+
+Server mengirim baris `data:` berisi JSON, dipisah satu baris kosong, dan diakhiri `data: [DONE]`:
+
+```text
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}
+
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"API "}}]}
+
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"gateway"}}]}
+
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: [DONE]
+```
+
+Teks ada di `choices[0].delta.content`. Gabungkan semua potongan untuk mendapatkan jawaban lengkap. Kirim `"stream_options": {"include_usage": true}` untuk meminta jumlah token di chunk terakhir.
+
+## Contoh
+
+**curl**
+
+```bash
+curl -N https://javarouters.talentadigitalkudus.id/v1/chat/completions \
+  -H "Authorization: Bearer $JAVAROUTERS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "claude-sonnet-4.6", "stream": true,
+       "messages": [{"role": "user", "content": "Ceritakan sejarah Kudus singkat."}]}'
+```
+
+`-N` mematikan buffering curl supaya potongan langsung tampil.
+
+**Python**
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+stream = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    stream=True,
+    messages=[{"role": "user", "content": "Ceritakan sejarah Kudus singkat."}],
+)
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+**JavaScript**
+
+```js
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const stream = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  stream: true,
+  messages: [{ role: "user", content: "Ceritakan sejarah Kudus singkat." }],
+});
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+}
+```
+
+**Tanpa SDK (fetch)**
+
+```js
+const res = await fetch("https://javarouters.talentadigitalkudus.id/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.JAVAROUTERS_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "claude-sonnet-4.6",
+    stream: true,
+    messages: [{ role: "user", content: "Ceritakan sejarah Kudus singkat." }],
+  }),
+});
+
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  buffer += decoder.decode(value, { stream: true });
+  const lines = buffer.split("\n");
+  buffer = lines.pop(); // simpan baris yang belum lengkap
+  for (const line of lines) {
+    if (!line.startsWith("data: ")) continue;
+    const data = line.slice(6).trim();
+    if (data === "[DONE]") continue;
+    const text = JSON.parse(data).choices?.[0]?.delta?.content;
+    if (text) process.stdout.write(text);
+  }
+}
+```
+
+## Tips
+
+- Buat parser yang tahan terhadap baris kosong dan baris `data:` yang terpotong di tengah. Simpan sisa buffer sampai baris lengkap, seperti contoh "Tanpa SDK".
+- Kalau aplikasimu berada di belakang reverse proxy (Nginx dan sejenisnya), matikan buffering untuk rute streaming supaya potongan tidak tertahan.
+- Error yang terjadi sebelum streaming dimulai dikirim sebagai respons JSON biasa dengan status HTTP error; cek status dulu sebelum membaca stream.
+
+---
+
+# Tool calling
+
+URL: https://javarouters.talentadigitalkudus.id/docs/panduan/tool-calling/
+
+Tool calling membuat model bisa meminta aplikasimu menjalankan fungsi, misalnya mengecek stok, mencari data, atau memanggil API lain, lalu memakai hasilnya untuk menjawab.
+
+**Perhatian:**
+Tidak semua model mendukung tool calling. Uji dulu model pilihanmu sebelum dipakai di produksi.
+
+## Alurnya
+
+1. Kirim request dengan daftar `tools` (nama fungsi, deskripsi, dan skema parameternya).
+2. Jika model ingin memanggil fungsi, respons berisi `tool_calls` dengan `finish_reason: "tool_calls"`.
+3. Aplikasimu menjalankan fungsi itu sendiri. Model tidak pernah menjalankan kode.
+4. Kirim hasilnya kembali sebagai pesan `role: "tool"`, lalu model menyusun jawaban akhir.
+
+## Contoh lengkap (Python, format OpenAI)
+
+```python
+import json
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+MODEL = "claude-sonnet-4.6"
+
+def cek_stok(produk: str) -> dict:
+    # Ganti dengan query ke database atau API milikmu.
+    return {"produk": produk, "stok": 12}
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "cek_stok",
+        "description": "Mengecek jumlah stok sebuah produk di gudang.",
+        "parameters": {
+            "type": "object",
+            "properties": {"produk": {"type": "string", "description": "Nama produk"}},
+            "required": ["produk"],
+        },
+    },
+}]
+
+messages = [{"role": "user", "content": "Stok kopi arabika masih ada berapa?"}]
+first = client.chat.completions.create(model=MODEL, messages=messages, tools=tools)
+reply = first.choices[0].message
+
+if reply.tool_calls:
+    messages.append(reply)  # simpan permintaan pemanggilan fungsi dari model
+    for call in reply.tool_calls:
+        args = json.loads(call.function.arguments)
+        result = cek_stok(**args)
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": json.dumps(result),
+        })
+    final = client.chat.completions.create(model=MODEL, messages=messages, tools=tools)
+    print(final.choices[0].message.content)
+else:
+    print(reply.content)
+```
+
+## Bentuk `tool_calls` di respons
+
+```json
+{
+  "role": "assistant",
+  "content": null,
+  "tool_calls": [
+    {
+      "id": "call_...",
+      "type": "function",
+      "function": { "name": "cek_stok", "arguments": "{\"produk\": \"kopi arabika\"}" }
+    }
+  ]
+}
+```
+
+`arguments` berupa **string JSON**; parse dulu sebelum dipakai, dan validasi isinya seperti input dari pengguna.
+
+## Format Anthropic
+
+Di endpoint [`/v1/messages`](https://javarouters.talentadigitalkudus.id/docs/api/messages-anthropic/), tools memakai format Anthropic: setiap tool punya `name`, `description`, dan `input_schema`. Pemanggilan fungsi muncul sebagai blok `tool_use`, dan hasilnya dikirim balik sebagai blok `tool_result` di pesan `user`. Ikuti [panduan tool use Anthropic](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) dengan base URL JavaRouters.
+
+---
+
+# Retry dan penanganan error
+
+URL: https://javarouters.talentadigitalkudus.id/docs/panduan/retry/
+
+Gangguan sementara bisa terjadi: batas request (`429`), penyedia model sedang sibuk (`5xx`), atau koneksi terputus. Integrasi yang baik mencoba ulang error sementara dengan jeda yang makin panjang (*exponential backoff*), dan langsung berhenti untuk error yang tidak akan berubah.
+
+Error yang boleh dan tidak boleh dicoba ulang dijelaskan di [Kode error](https://javarouters.talentadigitalkudus.id/docs/api/kode-error/#error-mana-yang-boleh-dicoba-ulang).
+
+## Retry bawaan SDK
+
+SDK resmi OpenAI dan Anthropic (Python dan JavaScript) sudah mencoba ulang otomatis untuk `429`, `5xx`, dan error koneksi. Jumlah percobaan dan timeout bisa diatur:
+
+**Python**
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+    max_retries=4,   # default SDK: 2
+    timeout=120.0,   # detik; jawaban panjang butuh waktu
+)
+```
+
+**JavaScript**
+
+```js
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+  maxRetries: 4,     // default SDK: 2
+  timeout: 120_000,  // milidetik
+});
+```
+
+## Menangani error di kode
+
+**Python**
+
+```python
+import openai
+
+try:
+    response = client.chat.completions.create(
+        model="claude-sonnet-4.6",
+        messages=[{"role": "user", "content": "Halo"}],
+    )
+except openai.AuthenticationError:
+    print("API key tidak valid (401). Cek JAVAROUTERS_API_KEY.")
+except openai.PermissionDeniedError as e:
+    print("Saldo kurang atau key tidak boleh memakai model ini (403):", e.message)
+except openai.RateLimitError:
+    print("Terlalu banyak request (429). Coba lagi nanti.")
+except openai.APIStatusError as e:
+    print(f"Error {e.status_code}:", e.message)
+except openai.APIConnectionError:
+    print("Gagal terhubung ke JavaRouters.")
+```
+
+**JavaScript**
+
+```js
+
+try {
+  const response = await client.chat.completions.create({
+    model: "claude-sonnet-4.6",
+    messages: [{ role: "user", content: "Halo" }],
+  });
+} catch (err) {
+  if (err instanceof OpenAI.APIError) {
+    // err.status: 401, 403, 429, 503, ...
+    console.error(`Error ${err.status}:`, err.message);
+  } else {
+    throw err;
+  }
+}
+```
+
+## Retry manual (tanpa SDK)
+
+Jika memanggil HTTP langsung, terapkan sendiri:
+
+```python
+import os, random, time, requests
+
+URL = "https://javarouters.talentadigitalkudus.id/v1/chat/completions"
+HEADERS = {"Authorization": f"Bearer {os.environ['JAVAROUTERS_API_KEY']}"}
+RETRYABLE = {429, 500, 502, 503}
+
+def chat(payload: dict, attempts: int = 5) -> dict:
+    for attempt in range(attempts):
+        try:
+            r = requests.post(URL, json=payload, headers=HEADERS, timeout=120)
+        except requests.ConnectionError:
+            r = None
+        if r is not None and r.ok:
+            return r.json()
+        if r is not None:
+            code = (r.json().get("error") or {}).get("code") if r.headers.get("content-type", "").startswith("application/json") else None
+            if r.status_code not in RETRYABLE or code == "model_not_found":
+                r.raise_for_status()  # error permanen: jangan diulang
+        time.sleep(min(2 ** attempt, 30) + random.random())  # 1s, 2s, 4s, ... + jitter
+    raise RuntimeError("Gagal setelah beberapa percobaan")
+```
+
+## Praktik baik lainnya
+
+- Pasang **timeout** yang cukup panjang (60–120 detik) untuk jawaban panjang, atau gunakan [streaming](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/).
+- Siapkan **model cadangan** di konfigurasi: jika satu model mengembalikan `503 model_not_found`, aplikasi bisa beralih ke model lain.
+- Catat isi `error.message` di log aplikasimu untuk memudahkan pelacakan.
+
+---
+
+# Python
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/python/
+
+## SDK OpenAI (disarankan)
+
+```bash
+pip install openai
+```
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+response = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    messages=[
+        {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+        {"role": "user", "content": "Buat 3 ide nama warung kopi."},
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+### Streaming
+
+```python
+stream = client.chat.completions.create(
+    model="claude-sonnet-4.6",
+    stream=True,
+    messages=[{"role": "user", "content": "Jelaskan REST API singkat."}],
+)
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+### Async (FastAPI, aiohttp, dll.)
+
+```python
+import asyncio, os
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI(
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+async def main():
+    response = await client.chat.completions.create(
+        model="claude-sonnet-4.6",
+        messages=[{"role": "user", "content": "Halo"}],
+    )
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```
+
+## SDK Anthropic
+
+```bash
+pip install anthropic
+```
+
+```python
+import os
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="https://javarouters.talentadigitalkudus.id",  # tanpa /v1
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+
+message = client.messages.create(
+    model="claude-sonnet-4.6",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Buat 3 ide nama warung kopi."}],
+)
+print(message.content[0].text)
+```
+
+## LangChain
+
+```bash
+pip install langchain-openai
+```
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    model="claude-sonnet-4.6",
+    base_url="https://javarouters.talentadigitalkudus.id/v1",
+    api_key=os.environ["JAVAROUTERS_API_KEY"],
+)
+print(llm.invoke("Apa itu LangChain?").content)
+```
+
+## Tanpa SDK (requests)
+
+```python
+import os, requests
+
+r = requests.post(
+    "https://javarouters.talentadigitalkudus.id/v1/chat/completions",
+    headers={"Authorization": f"Bearer {os.environ['JAVAROUTERS_API_KEY']}"},
+    json={"model": "claude-sonnet-4.6", "messages": [{"role": "user", "content": "Halo"}]},
+    timeout=120,
+)
+r.raise_for_status()
+print(r.json()["choices"][0]["message"]["content"])
+```
+
+Lihat juga: [Tool calling](https://javarouters.talentadigitalkudus.id/docs/panduan/tool-calling/), [Retry dan penanganan error](https://javarouters.talentadigitalkudus.id/docs/panduan/retry/).
+
+---
+
+# JavaScript / TypeScript
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/javascript/
+
+**Perhatian:**
+Panggil JavaRouters dari **server** (Node.js, Bun, Deno, API route Next.js), bukan dari kode browser. API key yang dikirim ke browser bisa dibaca siapa saja.
+
+## SDK OpenAI (disarankan)
+
+```bash
+npm install openai
+```
+
+```ts
+
+const client = new OpenAI({
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const response = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  messages: [
+    { role: "system", content: "Jawab dalam bahasa Indonesia." },
+    { role: "user", content: "Buat 3 ide nama warung kopi." },
+  ],
+});
+console.log(response.choices[0].message.content);
+```
+
+### Streaming
+
+```ts
+const stream = await client.chat.completions.create({
+  model: "claude-sonnet-4.6",
+  stream: true,
+  messages: [{ role: "user", content: "Jelaskan REST API singkat." }],
+});
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+}
+```
+
+## SDK Anthropic
+
+```bash
+npm install @anthropic-ai/sdk
+```
+
+```ts
+
+const client = new Anthropic({
+  baseURL: "https://javarouters.talentadigitalkudus.id", // tanpa /v1
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const message = await client.messages.create({
+  model: "claude-sonnet-4.6",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "Buat 3 ide nama warung kopi." }],
+});
+console.log(message.content[0].type === "text" ? message.content[0].text : message.content);
+```
+
+## Vercel AI SDK
+
+```bash
+npm install ai @ai-sdk/openai-compatible
+```
+
+```ts
+
+const javarouters = createOpenAICompatible({
+  name: "javarouters",
+  baseURL: "https://javarouters.talentadigitalkudus.id/v1",
+  apiKey: process.env.JAVAROUTERS_API_KEY,
+});
+
+const { text } = await generateText({
+  model: javarouters("claude-sonnet-4.6"),
+  prompt: "Buat 3 ide nama warung kopi.",
+});
+console.log(text);
+```
+
+## Tanpa SDK (fetch)
+
+```ts
+const res = await fetch("https://javarouters.talentadigitalkudus.id/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.JAVAROUTERS_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "claude-sonnet-4.6",
+    messages: [{ role: "user", content: "Halo" }],
+  }),
+});
+if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+const data = await res.json();
+console.log(data.choices[0].message.content);
+```
+
+Lihat juga: [Streaming tanpa SDK](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/), [Retry dan penanganan error](https://javarouters.talentadigitalkudus.id/docs/panduan/retry/).
+
+---
+
+# Go
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/go/
+
+Contoh di bawah hanya memakai library standar Go, tanpa dependensi tambahan. Kalau kamu sudah memakai SDK OpenAI untuk Go, cukup set base URL ke `https://javarouters.talentadigitalkudus.id/v1` dan API key JavaRouters.
+
+## Request biasa
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"time"
+)
+
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type ChatRequest struct {
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+	Stream   bool      `json:"stream,omitempty"`
+}
+
+type ChatResponse struct {
+	Choices []struct {
+		Message Message `json:"message"`
+	} `json:"choices"`
+	Usage struct {
+		PromptTokens     int `json:"prompt_tokens"`
+		CompletionTokens int `json:"completion_tokens"`
+	} `json:"usage"`
+}
+
+func main() {
+	body, _ := json.Marshal(ChatRequest{
+		Model:    "claude-sonnet-4.6",
+		Messages: []Message{{Role: "user", Content: "Buat 3 ide nama warung kopi."}},
+	})
+
+	req, _ := http.NewRequest(http.MethodPost,
+		"https://javarouters.talentadigitalkudus.id/v1/chat/completions", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("JAVAROUTERS_API_KEY"))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		msg, _ := io.ReadAll(resp.Body)
+		panic(fmt.Sprintf("error %d: %s", resp.StatusCode, msg))
+	}
+
+	var out ChatResponse
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		panic(err)
+	}
+	fmt.Println(out.Choices[0].Message.Content)
+}
+```
+
+## Streaming
+
+Set `Stream: true`, lalu baca baris `data:` satu per satu:
+
+```go
+// Tambahkan import "bufio" dan "strings".
+reader := bufio.NewReader(resp.Body)
+for {
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		break // io.EOF berarti stream selesai
+	}
+	line = strings.TrimSpace(line)
+	if !strings.HasPrefix(line, "data: ") {
+		continue
+	}
+	data := strings.TrimPrefix(line, "data: ")
+	if data == "[DONE]" {
+		break
+	}
+	var chunk struct {
+		Choices []struct {
+			Delta struct {
+				Content string `json:"content"`
+			} `json:"delta"`
+		} `json:"choices"`
+	}
+	if json.Unmarshal([]byte(data), &chunk) == nil && len(chunk.Choices) > 0 {
+		fmt.Print(chunk.Choices[0].Delta.Content)
+	}
+}
+```
+
+Format chunk lengkapnya ada di [Streaming](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/).
+
+---
+
+# PHP
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/php/
+
+**openai-php/client**
+
+```bash
+composer require openai-php/client guzzlehttp/guzzle
+```
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+$client = OpenAI::factory()
+    ->withApiKey(getenv('JAVAROUTERS_API_KEY'))
+    ->withBaseUri('https://javarouters.talentadigitalkudus.id/v1')
+    ->make();
+
+$result = $client->chat()->create([
+    'model' => 'claude-sonnet-4.6',
+    'messages' => [
+        ['role' => 'system', 'content' => 'Jawab dalam bahasa Indonesia.'],
+        ['role' => 'user', 'content' => 'Buat 3 ide nama warung kopi.'],
+    ],
+]);
+
+echo $result->choices[0]->message->content;
+```
+
+**cURL bawaan PHP**
+
+```php
+<?php
+$ch = curl_init('https://javarouters.talentadigitalkudus.id/v1/chat/completions');
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 120,
+    CURLOPT_HTTPHEADER => [
+        'Authorization: Bearer ' . getenv('JAVAROUTERS_API_KEY'),
+        'Content-Type: application/json',
+    ],
+    CURLOPT_POSTFIELDS => json_encode([
+        'model' => 'claude-sonnet-4.6',
+        'messages' => [['role' => 'user', 'content' => 'Buat 3 ide nama warung kopi.']],
+    ]),
+]);
+
+$body = curl_exec($ch);
+$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($status !== 200) {
+    throw new RuntimeException("Error $status: $body");
+}
+echo json_decode($body, true)['choices'][0]['message']['content'];
+```
+
+## Laravel
+
+Simpan key di `.env`:
+
+```dotenv
+JAVAROUTERS_API_KEY=sk-...
+```
+
+Lalu panggil dengan HTTP client bawaan Laravel:
+
+```php
+use Illuminate\Support\Facades\Http;
+
+$response = Http::withToken(env('JAVAROUTERS_API_KEY'))
+    ->timeout(120)
+    ->post('https://javarouters.talentadigitalkudus.id/v1/chat/completions', [
+        'model' => 'claude-sonnet-4.6',
+        'messages' => [['role' => 'user', 'content' => 'Halo']],
+    ])
+    ->throw();
+
+$text = $response->json('choices.0.message.content');
+```
+
+Sebaiknya baca key lewat `config()` (misalnya `config('services.javarouters.key')`) supaya tetap bekerja setelah `php artisan config:cache`.
+
+---
+
+# Java
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/java/
+
+**HttpClient (JDK 11+)**
+
+Tanpa dependensi tambahan. Untuk mem-parse JSON respons, pakai library JSON pilihanmu (Jackson, Gson, dan lain-lain).
+
+```java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
+public class JavaRoutersExample {
+    public static void main(String[] args) throws Exception {
+        String body = """
+            {
+              "model": "claude-sonnet-4.6",
+              "messages": [{"role": "user", "content": "Buat 3 ide nama warung kopi."}]
+            }
+            """;
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://javarouters.talentadigitalkudus.id/v1/chat/completions"))
+            .timeout(Duration.ofSeconds(120))
+            .header("Authorization", "Bearer " + System.getenv("JAVAROUTERS_API_KEY"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Error " + response.statusCode() + ": " + response.body());
+        }
+        System.out.println(response.body()); // jawaban ada di choices[0].message.content
+    }
+}
+```
+
+**SDK OpenAI Java**
+
+Tambahkan dependensi `com.openai:openai-java` (versi terbaru) ke Maven atau Gradle.
+
+```java
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.chat.completions.ChatCompletion;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+
+public class JavaRoutersExample {
+    public static void main(String[] args) {
+        OpenAIClient client = OpenAIOkHttpClient.builder()
+            .apiKey(System.getenv("JAVAROUTERS_API_KEY"))
+            .baseUrl("https://javarouters.talentadigitalkudus.id/v1")
+            .build();
+
+        ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
+            .model("claude-sonnet-4.6")
+            .addUserMessage("Buat 3 ide nama warung kopi.")
+            .build();
+
+        ChatCompletion completion = client.chat().completions().create(params);
+        System.out.println(completion.choices().get(0).message().content().orElse(""));
+    }
+}
+```
+
+Untuk Spring Boot, base URL dan key yang sama bisa dipakai di Spring AI (provider OpenAI) lewat `spring.ai.openai.base-url` dan `spring.ai.openai.api-key`. Isi base URL tanpa `/v1`, karena Spring AI menambahkan path-nya sendiri.
+
+---
+
+# C# / .NET
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/csharp/
+
+**SDK OpenAI (.NET)**
+
+```bash
+dotnet add package OpenAI
+```
+
+```csharp
+using System.ClientModel;
+using OpenAI;
+using OpenAI.Chat;
+
+var client = new ChatClient(
+    model: "claude-sonnet-4.6",
+    credential: new ApiKeyCredential(Environment.GetEnvironmentVariable("JAVAROUTERS_API_KEY")!),
+    options: new OpenAIClientOptions
+    {
+        Endpoint = new Uri("https://javarouters.talentadigitalkudus.id/v1"),
+    });
+
+ChatCompletion completion = client.CompleteChat(
+    new SystemChatMessage("Jawab dalam bahasa Indonesia."),
+    new UserChatMessage("Buat 3 ide nama warung kopi."));
+
+Console.WriteLine(completion.Content[0].Text);
+```
+
+**HttpClient**
+
+```csharp
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
+http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+    "Bearer", Environment.GetEnvironmentVariable("JAVAROUTERS_API_KEY"));
+
+var response = await http.PostAsJsonAsync(
+    "https://javarouters.talentadigitalkudus.id/v1/chat/completions",
+    new
+    {
+        model = "claude-sonnet-4.6",
+        messages = new[] { new { role = "user", content = "Buat 3 ide nama warung kopi." } },
+    });
+response.EnsureSuccessStatusCode();
+
+using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+Console.WriteLine(json.RootElement
+    .GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString());
+```
+
+---
+
+# HTTP (bahasa lain)
+
+URL: https://javarouters.talentadigitalkudus.id/docs/sdk/http/
+
+Bahasa apa pun yang bisa mengirim request HTTPS dan mengolah JSON bisa memakai JavaRouters, misalnya Ruby, Rust, Kotlin, Dart/Flutter (dari backend), atau aplikasi no-code seperti n8n dan Make. Cukup ikuti spesifikasi ini.
+
+## Request
+
+```http
+POST /v1/chat/completions HTTP/1.1
+Host: javarouters.talentadigitalkudus.id
+Authorization: Bearer sk-...
+Content-Type: application/json
+
+{
+  "model": "claude-sonnet-4.6",
+  "messages": [
+    {"role": "system", "content": "Jawab dalam bahasa Indonesia."},
+    {"role": "user", "content": "Halo"}
+  ]
+}
+```
+
+## Respons sukses (HTTP 200)
+
+Ambil teks jawaban dari `choices[0].message.content`:
+
+```json
+{
+  "choices": [
+    { "index": 0, "message": { "role": "assistant", "content": "Halo! Ada yang bisa saya bantu?" }, "finish_reason": "stop" }
+  ],
+  "usage": { "prompt_tokens": 15, "completion_tokens": 9, "total_tokens": 24 }
+}
+```
+
+## Respons error (HTTP 4xx/5xx)
+
+```json
+{ "error": { "message": "...", "type": "...", "code": "..." } }
+```
+
+Arti setiap kode status ada di [Kode error](https://javarouters.talentadigitalkudus.id/docs/api/kode-error/).
+
+## Daftar periksa integrasi
+
+- [ ] URL: `https://javarouters.talentadigitalkudus.id/v1/chat/completions`
+- [ ] Header `Authorization: Bearer <API key>` dan `Content-Type: application/json`
+- [ ] `model` diambil dari [daftar model](https://javarouters.talentadigitalkudus.id/docs/api/daftar-model/), ditulis persis
+- [ ] Timeout minimal 60–120 detik, atau pakai [streaming](https://javarouters.talentadigitalkudus.id/docs/panduan/streaming/)
+- [ ] Error `429` dan `5xx` dicoba ulang dengan jeda ([Retry](https://javarouters.talentadigitalkudus.id/docs/panduan/retry/))
+- [ ] API key disimpan di server, bukan di aplikasi frontend
+
+## Aplikasi no-code (n8n, Make, Zapier)
+
+Pakai node atau modul **HTTP Request** dengan pengaturan di atas. Di n8n, kamu juga bisa memakai node **OpenAI** dengan kredensial yang base URL-nya diganti ke `https://javarouters.talentadigitalkudus.id/v1`.
+
+---
+
+# MCP dokumentasi untuk AI
+
+URL: https://javarouters.talentadigitalkudus.id/docs/integrasi/mcp/
+
+JavaRouters menyediakan **MCP server dokumentasi**. Setelah disambungkan, asisten AI di editor kamu (Claude Code, Cursor, VS Code Copilot, Windsurf, dan lainnya) bisa mencari dan membaca dokumentasi ini sendiri, lalu langsung menulis kode integrasi JavaRouters di bahasa pilihanmu.
+
+```text
+https://javarouters.talentadigitalkudus.id/mcp
+```
+
+- **Transport:** Streamable HTTP
+- **Login:** tidak perlu. MCP ini hanya membaca dokumentasi publik, tidak mengakses akun atau API key kamu.
+
+## Cara menyambungkan
+
+**Claude Code**
+
+```bash
+claude mcp add --transport http javarouters-docs https://javarouters.talentadigitalkudus.id/mcp
+```
+
+Cek dengan `claude mcp list`, atau ketik `/mcp` di dalam Claude Code.
+
+**Cursor**
+
+Tambahkan ke `~/.cursor/mcp.json` (semua proyek) atau `.cursor/mcp.json` (satu proyek):
+
+```json
+{
+  "mcpServers": {
+    "javarouters-docs": {
+      "url": "https://javarouters.talentadigitalkudus.id/mcp"
+    }
+  }
+}
+```
+
+**VS Code**
+
+Tambahkan ke `.vscode/mcp.json` di proyekmu:
+
+```json
+{
+  "servers": {
+    "javarouters-docs": {
+      "type": "http",
+      "url": "https://javarouters.talentadigitalkudus.id/mcp"
+    }
+  }
+}
+```
+
+**Codex CLI**
+
+Tambahkan ke `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.javarouters-docs]
+url = "https://javarouters.talentadigitalkudus.id/mcp"
+```
+
+**Klien lain**
+
+Untuk klien yang hanya mendukung MCP lewat stdio (misalnya Claude Desktop versi lama), pakai jembatan `mcp-remote` (butuh Node.js):
+
+```json
+{
+  "mcpServers": {
+    "javarouters-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://javarouters.talentadigitalkudus.id/mcp"]
+    }
+  }
+}
+```
+
+Nama menu dan lokasi file konfigurasi bisa berubah antarversi aplikasi. Kalau berbeda, cari pengaturan "MCP server" dan isi URL di atas dengan tipe HTTP.
+
+## Tools yang tersedia
+
+| Tool | Fungsi |
+|---|---|
+| `search_docs` | Mencari halaman dokumentasi dengan kata kunci, misalnya `streaming`, `error 403`, `php`. |
+| `get_doc_page` | Mengambil isi lengkap satu halaman, misalnya `api/chat-completions`. |
+| `list_doc_pages` | Menampilkan daftar semua halaman. |
+| `get_integration_example` | Mengambil panduan integrasi lengkap untuk satu bahasa: `python`, `javascript`, `typescript`, `go`, `php`, `java`, `csharp`, atau `http`. |
+
+Semua tools hanya membaca. Isinya selalu sama dengan dokumentasi yang sedang online.
+
+## Contoh perintah ke asisten AI
+
+Setelah tersambung, minta saja dengan bahasa biasa:
+
+- "Pakai MCP javarouters-docs, buatkan endpoint Laravel yang memanggil JavaRouters dengan streaming."
+- "Integrasikan JavaRouters ke aplikasi FastAPI ini. Baca dokumentasinya dulu dari MCP javarouters-docs."
+- "Kenapa request saya ke JavaRouters dapat error 403? Cek di dokumentasi."
+
+AI akan membaca dokumentasi lewat MCP lalu menulis kodenya. Kamu tetap perlu mengisi API key sendiri di environment variable `JAVAROUTERS_API_KEY`.
+
+## Tanpa MCP: llms.txt
+
+Untuk AI atau alat yang membaca web, dokumentasi juga tersedia dalam format teks:
+
+- [`/llms.txt`](https://javarouters.talentadigitalkudus.id/llms.txt): daftar semua halaman
+- [`/llms-full.txt`](https://javarouters.talentadigitalkudus.id/llms-full.txt): seluruh dokumentasi dalam satu file
+
+Kamu juga bisa menempelkan isi `llms-full.txt` langsung ke chat AI mana pun sebagai konteks.
+
+---
+
+# Saldo dan harga
+
+URL: https://javarouters.talentadigitalkudus.id/docs/akun/saldo-dan-harga/
+
+## Sistem bayar sesuai pemakaian
+
+JavaRouters memakai saldo prabayar. Setiap request memotong saldo sesuai jumlah token yang dipakai:
+
+- **Token input**: teks yang kamu kirim (prompt, riwayat percakapan, system prompt).
+- **Token output**: teks jawaban dari model.
+
+Harga input dan output berbeda per model.
+
+## Harga
+
+- Harga per model ada di halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing), yang selalu menampilkan angka terbaru.
+- Harga input dan output sekitar **70% dari harga resmi** penyedia, dan disinkronkan otomatis setiap jam.
+- Saldo dan harga ditampilkan dalam **USD**.
+
+## Isi saldo
+
+Buka menu **Dompet** (`/wallet`) di konsol. Metode pengisian yang aktif ditampilkan di halaman itu.
+
+## Cek pemakaian
+
+Buka menu **Usage Logs** di konsol untuk melihat setiap request: model, jumlah token, dan biaya.
+
+## Batasi pemakaian per API key
+
+Saat membuat atau mengubah API key, kamu bisa membatasi kuota, masa berlaku, dan model yang boleh dipakai. Ini berguna untuk key yang dipakai aplikasi lain atau dibagikan ke anggota tim.
+
+---
+
+# FAQ
+
+URL: https://javarouters.talentadigitalkudus.id/docs/bantuan/faq/
+
+## Apakah kode saya perlu diubah banyak?
+
+Tidak. Kalau kamu sudah memakai SDK OpenAI atau Anthropic, cukup ganti base URL dan API key. Lihat [Ringkasan API](https://javarouters.talentadigitalkudus.id/docs/api/ringkasan/).
+
+## Bisakah memakai model Claude lewat format OpenAI?
+
+Bisa. Endpoint `/v1/chat/completions` menerima semua model yang dijual, termasuk Claude, Gemini dan DeepSeek.
+
+## Kenapa nama model berbeda dengan nama resmi?
+
+Nama model mengikuti katalog JavaRouters. Selalu pakai nama dari halaman [Model dan harga](https://javarouters.talentadigitalkudus.id/pricing) atau dari endpoint `/v1/models`.
+
+## Kenapa sebuah model hilang dari daftar?
+
+Daftar model mengikuti ketersediaan dari penyedia dan diperbarui otomatis. Model yang sedang tidak tersedia bisa hilang sementara dari daftar.
+
+## Apakah ada model gambar atau video?
+
+Belum. Saat ini yang dijual adalah model teks.
+
+## Bagaimana cara mengecek biaya sebuah request?
+
+Buka menu **Usage Logs** di konsol. Setiap request tercatat lengkap dengan model, jumlah token, dan biayanya.
+
+---
+
+# Tentang dan lisensi
+
+URL: https://javarouters.talentadigitalkudus.id/docs/bantuan/tentang/
+
+JavaRouters dibangun di atas **[New API](https://github.com/QuantumNous/new-api)** karya **QuantumNous**, yang dirilis dengan lisensi [GNU AGPL v3](https://www.gnu.org/licenses/agpl-3.0.html). New API sendiri dikembangkan dari [One API](https://github.com/songquanpeng/one-api) (lisensi MIT).
+
+Sesuai lisensi AGPL v3, kode sumber JavaRouters beserta perubahannya tersedia untuk umum di [github.com/BIGBANG-69/javarouters](https://github.com/BIGBANG-69/javarouters).
+
+Dokumentasi ini dibuat dengan [Starlight](https://starlight.astro.build).
