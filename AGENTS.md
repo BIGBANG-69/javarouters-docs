@@ -37,6 +37,8 @@ https://javarouters.talentadigitalkudus.id. The site is built with
    the gateway actually offers it. Say the available methods are shown in the **Dompet** menu.
 4. **No fabricated social proof:** no testimonials, customer logos, uptime figures, or usage stats.
 5. **Support contact:** no support email exists yet. Do not invent one; ask the user.
+5a. **No infrastructure details:** never name server locations, regions, hosting providers or
+   upstream sources. The owner asked for this explicitly.
 6. **Attribution:** keep `bantuan/tentang.md` crediting New API by QuantumNous (AGPLv3) and
    linking the public source. Never remove or rename new-api / QuantumNous references.
 7. Facts verified against the gateway code (keep consistent if you edit them):

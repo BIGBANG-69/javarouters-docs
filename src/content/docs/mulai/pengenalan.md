@@ -17,7 +17,7 @@ JavaRouters adalah **gateway API AI**: satu akun dan satu API key untuk mengakse
 - **Satu key untuk banyak model.** Tidak perlu akun dan tagihan terpisah di tiap penyedia.
 - **Kompatibel dengan OpenAI dan Anthropic.** SDK dan alat yang sudah ada (OpenAI SDK, Anthropic SDK, Claude Code, Cline, dan lain-lain) cukup diganti base URL dan API key-nya.
 - **Harga di bawah harga resmi.** Harga input dan output sekitar 70% dari harga resmi penyedia, dan diperbarui otomatis setiap jam. Lihat [Saldo dan harga](/docs/akun/saldo-dan-harga/).
-- **Server di Asia Tenggara (Singapura)**, dekat dengan pengguna di Indonesia.
+- **Setiap request tercatat.** Model, jumlah token, dan biaya setiap request bisa dilihat di menu **Usage Logs** di konsol.
 
 ## Yang perlu diketahui
 
